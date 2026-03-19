@@ -3,50 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUV-F | Pink Rating System</title>
+    <title>SUV-F | Multi-Pastel Pro</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
-            --bg: #fff5f8;
-            --accent: #ff85b2; 
+            --bg: #fffcfd;
+            --accent-pink: #ffcce0; 
             --accent-dark: #f06292;
-            --text: #5d4037;
-            --gray: #f8bbd0;
-            --malos: #ff5252;
+            --text: #4e342e;
+            --gray: #fce4ec;
+            --malos: #ff8a80;
+            /* Pastel Group Colors */
+            --c-gusto: #ffb7b2;
+            --c-meccanica: #b2e2f2;
+            --c-psiche: #f2b2e2;
+            --c-logistica: #ffdfba;
         }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding-bottom: 90px; color: var(--text); }
         
-        .navbar { background: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(255,133,178,0.2); }
-        .lang-select { background: var(--gray); color: white; border: none; padding: 6px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .navbar { background: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .lang-select { background: var(--gray); color: var(--accent-dark); border: none; padding: 6px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
         .screen { display: none; padding: 20px; max-width: 1200px; margin: auto; animation: fadeIn 0.3s ease; }
         .active { display: block; }
 
         /* Login & Instructions */
-        .card-auth { background: white; padding: 30px; border-radius: 35px; text-align: center; box-shadow: 0 15px 35px rgba(255,133,178,0.15); max-width: 500px; margin: 40px auto; border: 1px solid var(--gray); }
-        .instruction-box { text-align: left; background: var(--bg); padding: 20px; border-radius: 20px; margin: 20px 0; font-size: 0.85em; line-height: 1.5; border: 1px dashed var(--accent); }
+        .card-auth { background: white; padding: 30px; border-radius: 35px; text-align: center; box-shadow: 0 15px 35px rgba(240,98,146,0.1); max-width: 500px; margin: 40px auto; border: 1px solid var(--gray); }
+        .instruction-box { text-align: left; background: #fff9fb; padding: 20px; border-radius: 20px; margin: 20px 0; font-size: 0.85em; line-height: 1.5; border: 1px dashed var(--accent-dark); }
         .step { margin-bottom: 10px; display: flex; align-items: flex-start; }
-        .step-num { background: var(--accent); color: white; min-width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-weight: bold; font-size: 0.7em; margin-top: 2px; }
+        .step-num { background: var(--accent-dark); color: white; min-width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-weight: bold; font-size: 0.7em; margin-top: 2px; }
 
-        /* Parametri */
-        .group-header { padding: 14px; border-radius: 15px; color: white; margin-top: 30px; font-weight: bold; text-transform: uppercase; font-size: 0.85em; background: var(--accent); letter-spacing: 1px; }
+        /* Parametri Dinamici */
+        .group-header { padding: 14px; border-radius: 15px; color: #444; margin-top: 30px; font-weight: 900; text-transform: uppercase; font-size: 0.9em; letter-spacing: 1.5px; border-bottom: 4px solid rgba(0,0,0,0.1); }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; margin-top: 15px; }
-        .param-card { background: white; padding: 22px; border-radius: 25px; border-left: 8px solid var(--gray); transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
-        .param-card.malos-mode { border-left-color: var(--malos) !important; background: #fff8f8; }
+        .param-card { background: white; padding: 22px; border-radius: 25px; border-left: 10px solid var(--gray); transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+        .param-card.malos-mode { border-left-color: var(--malos) !important; background: #fffcfc; }
         
-        .malos-btn { font-size: 0.65em; padding: 5px 12px; border-radius: 10px; border: 1px solid var(--gray); cursor: pointer; float: right; font-weight: bold; color: #999; background: white; }
+        .malos-btn { font-size: 0.65em; padding: 5px 12px; border-radius: 10px; border: 1px solid #eee; cursor: pointer; float: right; font-weight: bold; color: #bbb; background: white; }
         .malos-active { background: var(--malos); color: white; border-color: var(--malos); }
 
         /* Sliders */
-        .slider-label { font-size: 0.75em; font-weight: bold; color: var(--accent-dark); display: flex; justify-content: space-between; margin-top: 10px; }
-        input[type=range] { width: 100%; margin: 8px 0; accent-color: var(--accent); cursor: pointer; }
+        .slider-label { font-size: 0.75em; font-weight: bold; color: #888; display: flex; justify-content: space-between; margin-top: 10px; }
+        .slider-label span { color: var(--accent-dark); font-weight: 900; }
+        input[type=range] { width: 100%; margin: 8px 0; accent-color: var(--accent-dark); cursor: pointer; }
+
+        /* Algorithm & Info */
+        .algo-box { background: white; padding: 25px; border-radius: 30px; border-left: 10px solid var(--accent-dark); margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.04); }
+        .math-block { background: #fefefe; padding: 15px; border-radius: 15px; border: 1px solid #eee; font-family: 'Courier New', monospace; margin: 15px 0; font-size: 1.1em; color: var(--accent-dark); text-align: center; }
 
         /* Score & Nav */
-        .score-box { margin-top:40px; background:var(--accent-dark); color:white; padding:45px; border-radius:40px; text-align:center; box-shadow: 0 15px 30px rgba(240,98,146,0.3); }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 18px 0; z-index: 1000; border-top: 1px solid var(--gray); }
-        .nav-item { color: #d1d1d1; cursor: pointer; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
+        .score-box { margin-top:40px; background: var(--accent-dark); color:white; padding:45px; border-radius:40px; text-align:center; box-shadow: 0 15px 30px rgba(240,98,146,0.3); }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 15px 0; z-index: 1000; border-top: 1px solid var(--gray); }
+        .nav-item { color: #d1d1d1; cursor: pointer; font-size: 0.7em; font-weight: 900; text-transform: uppercase; text-align: center; }
         .nav-item.active-nav { color: var(--accent-dark); }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
@@ -61,60 +71,60 @@
         <option value="es">🇪🇸 ES</option>
         <option value="fr">🇫🇷 FR</option>
     </select>
-    <div id="userDisplay" style="font-weight: 900; color: var(--accent-dark);"></div>
+    <div id="userDisplay" style="font-weight: 900; color: var(--accent-dark); font-size: 0.8em;"></div>
 </div>
 
 <div id="loginScreen" class="screen active">
     <div class="card-auth">
-        <h1 style="color:var(--accent-dark); margin:0;">SUV-F <small style="font-size:0.4em;">PINK</small></h1>
-        
+        <h1 style="color:var(--accent-dark); margin:0; letter-spacing: 2px;">SUV-F <small style="font-size:0.4em; color: #ccc;">2026</small></h1>
         <div class="instruction-box">
-            <b id="txt_instr_title" style="display:block; margin-bottom:10px; color:var(--accent-dark);">GUIDA AL RATING:</b>
-            <div class="step"><div class="step-num">1</div><span id="step1">Scegli il frutto e scrivi il nome.</span></div>
-            <div class="step"><div class="step-num">2</div><span id="step2">Usa il <b>Valore</b> per l'intensità (0-100).</span></div>
-            <div class="step"><div class="step-num">3</div><span id="step3">Usa l'<b>Importanza</b> per dare "potere" al voto.</span></div>
-            <div class="step"><div class="step-num">4</div><span id="step4">Attiva <b>MALOS</b> se il parametro è un difetto.</span></div>
-            <div class="step"><div class="step-num">5</div><span id="step5">Controlla il Grafico Radar per il profilo bio-meccanico.</span></div>
+            <b id="txt_instr_title" style="display:block; margin-bottom:10px; color:var(--accent-dark);">GUIDA RAPIDA:</b>
+            <div class="step"><div class="step-num">1</div><span id="step1">Nome frutto nell'input superiore.</span></div>
+            <div class="step"><div class="step-num">2</div><span id="step2">Valore = Intensità della percezione.</span></div>
+            <div class="step"><div class="step-num">3</div><span id="step3">Importanza = Peso del parametro sul totale.</span></div>
+            <div class="step"><div class="step-num">4</div><span id="step4">MALOS = Inverte il segno (punti negativi).</span></div>
         </div>
-
-        <input type="text" id="username" placeholder="Nome Analista" style="width:85%; padding:15px; margin-bottom:15px; border-radius:15px; border:2px solid var(--gray); outline:none;">
+        <input type="text" id="username" placeholder="User Name" style="width:85%; padding:15px; margin-bottom:15px; border-radius:15px; border:2px solid var(--gray); outline:none; text-align: center; font-weight: bold;">
         <div style="margin-bottom:20px;">
             <label style="font-size:0.85em; color:#888; cursor:pointer;"><input type="checkbox" id="rememberMe"> <span id="txt_remember"></span></label>
         </div>
-        <button onclick="login()" id="btn_login" style="width:90%; background:var(--accent); color:white; padding:16px; border:none; border-radius:15px; font-weight:bold; cursor:pointer;"></button>
+        <button onclick="login()" id="btn_login" style="width:90%; background:var(--accent-dark); color:white; padding:18px; border:none; border-radius:15px; font-weight:900; cursor:pointer; letter-spacing: 1px;"></button>
     </div>
 </div>
 
 <div id="ratingScreen" class="screen">
-    <input type="text" id="fruitSearch" style="width:100%; padding:20px; border-radius:25px; border:none; box-shadow:0 8px 25px rgba(255,133,178,0.1); font-size:1.1em; margin-bottom:25px; box-sizing:border-box; outline:none;" placeholder="...">
-    
+    <input type="text" id="fruitSearch" style="width:100%; padding:22px; border-radius:25px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.05); font-size:1.1em; margin-bottom:25px; box-sizing:border-box; outline:none; text-align: center; font-weight: 900; color: var(--accent-dark);" placeholder="...">
     <div id="dynamicParams"></div>
-
     <div class="score-box">
-        <h3 id="txt_totalScore" style="margin:0; opacity:0.8; font-size:0.9em; letter-spacing:1px;">SUV-F INDEX</h3>
-        <div id="finalScore" style="font-size:5.5em; font-weight:900; line-height:1; margin:10px 0;">0</div>
-        <button onclick="saveData()" id="btn_save" style="background:white; color:var(--accent-dark); border:none; padding:18px 50px; border-radius:15px; font-weight:bold; cursor:pointer; font-size:1em; margin-top:15px;"></button>
+        <h3 id="txt_totalScore" style="margin:0; opacity:0.8; font-size:0.9em; letter-spacing:2px;">SUV-F INDEX</h3>
+        <div id="finalScore" style="font-size:6em; font-weight:900; line-height:1; margin:10px 0;">0</div>
+        <button onclick="saveData()" id="btn_save" style="background:white; color:var(--accent-dark); border:none; padding:18px 60px; border-radius:20px; font-weight:900; cursor:pointer; font-size:1em; margin-top:15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);"></button>
     </div>
 </div>
 
-<div id="logicScreen" class="screen">
-    <h2 style="color:var(--accent-dark);">🌸 Come funziona il punteggio?</h2>
-    <div class="logic-card" style="background:white; padding:20px; border-radius:20px; margin-bottom:15px; border-left:10px solid var(--accent);">
-        <strong>1. Valore (Intensità)</strong>
-        <p>Indica quanto quel parametro è presente nel frutto (es. "Molto dolce" = 90).</p>
+<div id="algoScreen" class="screen">
+    <h2 style="color:var(--accent-dark);">🧮 Logica Matematica</h2>
+    <div class="algo-box">
+        <strong>Punteggio Pesato Dinamico</strong>
+        <p>A differenza di un voto standard, il SUV-F calcola l'impatto reale di ogni sensazione moltiplicando la sua forza per la sua rilevanza.</p>
+        <div class="math-block">
+            P = V * (I / 100) * M
+        </div>
+        <ul style="font-size: 0.9em; line-height: 1.8;">
+            <li><strong>P</strong> = Punti generati dal singolo parametro.</li>
+            <li><strong>V</strong> = Valore (Intensità rilevata 0-100).</li>
+            <li><strong>I</strong> = Importanza (Peso assegnato 0-100%).</li>
+            <li><strong>M</strong> = Moltiplicatore Malos (1 se spento, -1 se acceso).</li>
+        </ul>
     </div>
-    <div class="logic-card" style="background:white; padding:20px; border-radius:20px; margin-bottom:15px; border-left:10px solid var(--accent);">
-        <strong>2. Importanza (Peso / Potere)</strong>
-        <p>Indica quanto quel parametro deve influire sul voto finale. Se l'importanza è 0%, il parametro non sposta il punteggio.</p>
-    </div>
-    <div class="logic-card" style="background:white; padding:20px; border-radius:20px; border-left:10px solid var(--malos);">
-        <strong>3. Modalità MALOS</strong>
-        <p>Sottrae il punteggio invece di aggiungerlo. Si usa per i difetti.</p>
+    <div class="algo-box" style="border-left-color: var(--c-meccanica);">
+        <strong>Il Grafico Radar</strong>
+        <p>Il poligono mostra i valori grezzi ($V$) per definire il profilo sensoriale puro, mentre il punteggio finale ($Total \sum P$) definisce la qualità esperienziale.</p>
     </div>
 </div>
 
 <div id="chartScreen" class="screen">
-    <div style="background:white; border-radius:30px; padding:25px; height:70vh; box-shadow:0 10px 30px rgba(0,0,0,0.05);">
+    <div style="background:white; border-radius:40px; padding:25px; height:75vh; box-shadow:0 10px 40px rgba(0,0,0,0.05); position: relative;">
         <canvas id="radarChart"></canvas>
     </div>
 </div>
@@ -125,10 +135,10 @@
 </div>
 
 <div id="mainNav" class="bottom-nav" style="display:none;">
-    <div class="nav-item active-nav" onclick="showTab('ratingScreen', this)" id="nav_vota"></div>
-    <div class="nav-item" onclick="showTab('logicScreen', this)">LOGICA</div>
-    <div class="nav-item" onclick="showTab('chartScreen', this)" id="nav_grafico"></div>
-    <div class="nav-item" onclick="showTab('rankScreen', this)" id="nav_rank"></div>
+    <div class="nav-item active-nav" onclick="showTab('ratingScreen', this)" id="nav_vota">VOTA</div>
+    <div class="nav-item" onclick="showTab('algoScreen', this)">ALGORITMO</div>
+    <div class="nav-item" onclick="showTab('chartScreen', this)" id="nav_grafico">GRAFICO</div>
+    <div class="nav-item" onclick="showTab('rankScreen', this)" id="nav_rank">TOP</div>
 </div>
 
 <script>
@@ -151,47 +161,39 @@ let radarChart = null;
 
 const translations = {
     it: {
-        instr_title: "GUIDA AL RATING:",
-        step1: "Scegli il frutto e scrivi il nome.",
-        step2: "Usa il Valore per l'intensità (0-100).",
-        step3: "Usa l'Importanza per dare potere al voto.",
-        step4: "Attiva MALOS se il parametro è un difetto.",
-        step5: "Controlla il Grafico Radar per il profilo.",
-        remember: "Resta connesso", loginBtn: "INIZIA ANALISI", totalScore: "SUV-F INDEX", saveBtn: "SALVA ANALISI",
-        search: "Quale frutto stai analizzando?", navVota: "VOTA", navGrafico: "GRAFICO", navRank: "RANK",
-        myRank: "Le tue recensioni", val: "Valore", imp: "Potere (Peso)"
+        instr_title: "GUIDA RAPIDA:", step1: "Nome frutto nell'input superiore.", step2: "Valore = Intensità (0-100).", 
+        step3: "Importanza = Peso (0-100%).", step4: "MALOS = Punti negativi.",
+        remember: "Resta connesso", loginBtn: "ACCEDI AL SISTEMA", totalScore: "SUV-F INDEX", saveBtn: "ARCHIVIA ANALISI",
+        search: "Nome del Frutto...", navVota: "VOTA", navGrafico: "ANALISI", navRank: "CLASSIFICA",
+        myRank: "Le tue recensioni salvate", val: "Valore", imp: "Importanza"
     },
     en: {
-        instr_title: "RATING GUIDE:",
-        step1: "Choose the fruit and type its name.",
-        step2: "Use Value for intensity (0-100).",
-        step3: "Use Importance to give power to the score.",
-        step4: "Activate MALOS if the parameter is a defect.",
-        step5: "Check the Radar Chart for the profile.",
-        remember: "Keep me logged in", loginBtn: "START ANALYSIS", totalScore: "SUV-F INDEX", saveBtn: "SAVE ANALYSIS",
-        search: "What fruit are you testing?", navVota: "RATE", navGrafico: "CHART", navRank: "RANK",
-        myRank: "Your reviews", val: "Value", imp: "Power (Weight)"
+        instr_title: "QUICK GUIDE:", step1: "Fruit name in the top input.", step2: "Value = Intensity (0-100).", 
+        step3: "Importance = Weight (0-100%).", step4: "MALOS = Negative points.",
+        remember: "Remember me", loginBtn: "ACCESS SYSTEM", totalScore: "SUV-F INDEX", saveBtn: "SAVE ANALYSIS",
+        search: "Fruit Name...", navVota: "RATE", navGrafico: "ANALYSIS", navRank: "RANKING",
+        myRank: "Your saved reviews", val: "Value", imp: "Weight"
     }
 };
 
 const groups = [
-    { n: {it:"Gusto", en:"Taste"}, c:"#ff85b2", p:[
+    { n: {it:"Gusto", en:"Taste"}, c:"var(--c-gusto)", p:[
         {it:"Brix (Dolce)", en:"Brix"}, {it:"Acidità", en:"Acidity"}, {it:"Intensità", en:"Intensity"},
         {it:"Amarezza", en:"Bitterness"}, {it:"Aftertaste", en:"Aftertaste"}, {it:"Astringenza", en:"Astringency"},
         {it:"Tropicalità", en:"Tropicality"}, {it:"Mente Pulita", en:"Cleansing"}, {it:"Soddisfazione", en:"Satisfaction"}
     ]},
-    { n: {it:"Meccanica", en:"Mechanics"}, c:"#f06292", p:[
+    { n: {it:"Meccanica", en:"Mechanics"}, c:"var(--c-meccanica)", p:[
         {it:"Crunchiness", en:"Crunchiness"}, {it:"Crispyness", en:"Crispyness"}, {it:"Carnosità", en:"Fleshiness"},
         {it:"Succosità", en:"Juiciness"}, {it:"Cremosità", en:"Creaminess"}, {it:"Viscidità", en:"Sliminess"},
         {it:"Secchezza", en:"Dryness"}, {it:"Farinosità", en:"Mealiness"}, {it:"Gag Index", en:"Gag Index"},
         {it:"Sound Design", en:"Sound"}, {it:"Fibrosità", en:"Fibrosity"}
     ]},
-    { n: {it:"Psiche & Bio", en:"Psych & Bio"}, c:"#ec407a", p:[
+    { n: {it:"Psiche & Bio", en:"Psych & Bio"}, c:"var(--c-psiche)", p:[
         {it:"Costanza", en:"Consistency"}, {it:"Sfumature", en:"Nuances"}, {it:"Inganno", en:"Visual Trick"},
         {it:"Finestra Godibilità", en:"Window"}, {it:"Sex Appeal", en:"Sex Appeal"},
         {it:"Nutrizione", en:"Nutrition"}, {it:"Sazietà", en:"Satiety"}
     ]},
-    { n: {it:"Logistica", en:"Logistics"}, c:"#d81b60", p:[
+    { n: {it:"Logistica", en:"Logistics"}, c:"var(--c-logistica)", p:[
         {it:"Sbucciabilità", en:"Peelability"}, {it:"Portabilità", en:"Portability"}, {it:"Seme Experience", en:"Seed Exp"},
         {it:"Impegno Mentale", en:"Mental Load"}, {it:"Anatomia Scarto", en:"Waste"}, {it:"Versatilità", en:"Versatility"},
         {it:"Buccia", en:"Peel Quality"}, {it:"Resa (Spreco)", en:"Yield"}
@@ -208,21 +210,8 @@ function changeLang(v) { lang = v; updateTexts(); if(user) renderParams(); }
 
 function updateTexts() {
     const t = translations[lang] || translations.en;
-    document.getElementById('txt_instr_title').innerText = t.instr_title;
-    document.getElementById('step1').innerText = t.step1;
-    document.getElementById('step2').innerText = t.step2;
-    document.getElementById('step3').innerText = t.step3;
-    document.getElementById('step4').innerText = t.step4;
-    document.getElementById('step5').innerText = t.step5;
-    document.getElementById('txt_remember').innerText = t.remember;
-    document.getElementById('btn_login').innerText = t.loginBtn;
-    document.getElementById('fruitSearch').placeholder = t.search;
-    document.getElementById('txt_totalScore').innerText = t.totalScore;
-    document.getElementById('btn_save').innerText = t.saveBtn;
-    document.getElementById('nav_vota').innerText = t.navVota;
-    document.getElementById('nav_grafico').innerText = t.navGrafico;
-    document.getElementById('nav_rank').innerText = t.navRank;
-    document.getElementById('txt_myRank').innerText = t.myRank;
+    const ids = ['txt_instr_title','step1','step2','step3','step4','txt_remember','btn_login','fruitSearch','txt_totalScore','btn_save','nav_vota','nav_grafico','nav_rank','txt_myRank'];
+    ids.forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerText = t[id.replace('txt_','')] || t[id] || "..."; });
 }
 
 function login() {
@@ -245,16 +234,16 @@ function renderParams() {
     container.innerHTML = "";
     let idx = 0;
     groups.forEach(g => {
-        container.innerHTML += `<div class="group-header">${g.n[lang]}</div>`;
+        container.innerHTML += `<div class="group-header" style="background:${g.c}">${g.n[lang]}</div>`;
         const grid = document.createElement('div'); grid.className="grid";
         g.p.forEach(p => {
             grid.innerHTML += `
-                <div class="param-card" id="card_${idx}">
+                <div class="param-card" id="card_${idx}" style="border-left-color:${g.c}">
                     <button class="malos-btn" onclick="toggleMalos(${idx}, this)">MALOS</button>
-                    <strong style="color:var(--accent-dark)">${p[lang] || p.en}</strong>
-                    <div class="slider-label">Valore <span id="v_t_${idx}">50</span></div>
+                    <strong style="color:var(--text); font-size:1em;">${p[lang] || p.en}</strong>
+                    <div class="slider-label">${translations[lang].val} <span id="v_t_${idx}">50</span></div>
                     <input type="range" id="v_${idx}" value="50" oninput="updateScore()">
-                    <div class="slider-label">Importanza <span id="w_t_${idx}">50%</span></div>
+                    <div class="slider-label">${translations[lang].imp} <span id="w_t_${idx}">50%</span></div>
                     <input type="range" id="w_${idx}" value="50" oninput="updateScore()">
                 </div>`;
             idx++;
@@ -274,8 +263,9 @@ function toggleMalos(idx, btn) {
 function updateScore() {
     let total = 0;
     for(let i=0; i<35; i++) {
-        if(!document.getElementById(`v_${i}`)) continue;
-        let v = parseInt(document.getElementById(`v_${i}`).value);
+        const vEl = document.getElementById(`v_${i}`);
+        if(!vEl) continue;
+        let v = parseInt(vEl.value);
         let w = parseInt(document.getElementById(`w_${i}`).value);
         document.getElementById(`v_t_${i}`).innerText = v;
         document.getElementById(`w_t_${i}`).innerText = w + "%";
@@ -296,16 +286,53 @@ function showTab(id, el) {
 
 function drawChart() {
     const ctx = document.getElementById('radarChart').getContext('2d');
-    const labels = groups.flatMap(g => g.p.map(p => p[lang] || p.en));
-    const vals = []; for(let i=0; i<35; i++) {
-        const el = document.getElementById(`v_${i}`);
-        vals.push(el ? el.value : 0);
-    }
+    const labels = [];
+    const vals = [];
+    const pointColors = [];
+    
+    let idx = 0;
+    groups.forEach(g => {
+        g.p.forEach(p => {
+            labels.push(p[lang] || p.en);
+            vals.push(document.getElementById(`v_${idx}`).value);
+            pointColors.push(g.c.replace('var(','').replace(')','')); // Estrae il colore del gruppo
+            idx++;
+        });
+    });
+
     if(radarChart) radarChart.destroy();
     radarChart = new Chart(ctx, {
         type: 'radar',
-        data: { labels: labels, datasets: [{ data: vals, backgroundColor: 'rgba(255, 133, 178, 0.2)', borderColor: '#ff85b2', borderWidth: 2 }] },
-        options: { responsive: true, maintainAspectRatio: false, scales: { r: { min:0, max:100, ticks:{display:false}, pointLabels:{font:{size:8}} } }, plugins:{legend:{display:false}} }
+        data: {
+            labels: labels,
+            datasets: [{
+                data: vals,
+                backgroundColor: 'rgba(240, 98, 146, 0.1)',
+                borderColor: '#f06292',
+                borderWidth: 2,
+                pointBackgroundColor: labels.map((_, i) => {
+                    if (i < 9) return '#ffb7b2'; // Gusto
+                    if (i < 20) return '#b2e2f2'; // Meccanica
+                    if (i < 27) return '#f2b2e2'; // Psiche
+                    return '#ffdfba'; // Logistica
+                }),
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    min: 0, max: 100,
+                    ticks: { display: false },
+                    grid: { color: '#eee' },
+                    angleLines: { color: '#eee' },
+                    pointLabels: { font: { size: 9, weight: 'bold' }, color: '#999' }
+                }
+            },
+            plugins: { legend: { display: false } }
+        }
     });
 }
 
@@ -313,7 +340,7 @@ function saveData() {
     const f = document.getElementById('fruitSearch').value.trim() || "Ignoto";
     const s = document.getElementById('finalScore').innerText;
     db.ref(`u/${user}/${f}`).set({ score: s, date: new Date().toLocaleDateString() });
-    alert("Analisi Sincronizzata! 🌸");
+    alert("Analisi Archiviata nel Cloud! 🌸");
 }
 
 function loadRanking() {
@@ -321,9 +348,11 @@ function loadRanking() {
         const d = s.val() || {};
         document.getElementById('myList').innerHTML = Object.entries(d)
             .sort((a,b) => b[1].score - a[1].score)
-            .map(e => `<div style="background:white; padding:15px; margin-bottom:10px; border-radius:15px; display:flex; justify-content:space-between; border-left:5px solid var(--accent);">
-                <b>${e[0]}</b> <span>${e[1].score} PT</span>
-            </div>`).join('');
+            .map(e => `
+                <div style="background:white; padding:18px; border-radius:20px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 10px rgba(0,0,0,0.03); border-right: 8px solid var(--accent-pink);">
+                    <b style="color:var(--text);">${e[0]}</b> 
+                    <span style="background:var(--accent-dark); color:white; padding:5px 12px; border-radius:10px; font-weight:900; font-size:0.9em;">${e[1].score} SUV-F</span>
+                </div>`).join('');
     });
 }
 </script>

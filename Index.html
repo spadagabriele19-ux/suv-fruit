@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUV-F: Universal Fruit Rating</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.jsdelivr.net"></script>
+    <script src="https://www.gstatic.com"></script>
+    <script src="https://www.gstatic.com"></script>
+    <style>
+        :root { --pos: #2ecc71; --neg: #e74c3c; --accent: #3498db; --weight: #f39c12; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #2c3e50; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .header-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .lang-btn { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        #loginScreen { position: fixed; inset: 0; background: #2c3e50; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .login-card { background: white; padding: 35px; border-radius: 20px; text-align: center; width: 300px; }
+        .search-section { text-align: center; margin-bottom: 30px; position: relative; }
+        #fruitSearch { width: 100%; max-width: 500px; padding: 15px; border-radius: 15px; border: 2px solid #ddd; font-size: 1.2em; outline: none; }
+        .dropdown { position: absolute; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: white; border: 1px solid #ddd; z-index: 100; max-height: 200px; overflow-y: auto; border-radius: 0 0 15px 15px; }
+        .dropdown-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #eee; }
+        #fruitImg { width: 180px; height: 180px; border-radius: 50%; object-fit: cover; margin: 20px auto; display: none; border: 8px solid var(--bg); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .param-card { background: #fafafa; padding: 15px; border-radius: 15px; border: 1px solid #eee; position: relative; }
+        .info-btn { background: #bdc3c7; color: white; border-radius: 50%; width: 22px; height: 22px; border: none; cursor: help; font-weight: bold; float: right; }
+        .info-btn:hover::after { content: attr(data-info); position: absolute; background: #333; color: white; padding: 12px; border-radius: 10px; width: 220px; z-index: 100; top: 45px; left: 10px; font-size: 13px; line-height: 1.4; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .score-box { background: #2c3e50; color: white; padding: 30px; border-radius: 20px; text-align: center; margin: 40px 0; }
+        #finalScore { font-size: 5em; font-weight: bold; color: var(--pos); line-height: 1; }
+        #tierLabel { font-size: 1.8em; font-weight: bold; color: var(--weight); margin-top: 10px; text-transform: uppercase; }
+        .btn-upload { background: var(--accent); color: white; border: none; padding: 20px 50px; border-radius: 15px; font-size: 1.3em; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; margin-top: 20px; }
+        .lists { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 50px; }
+        .list-box { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .list-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; align-items: center; }
+        input[type=range] { cursor: pointer; width: 100%; }
+    </style>
+</head>
+<body>
+
+<div id="loginScreen">
+    <div class="login-card">
+        <h2 id="txtLoginTitle">SUV-F ACCESS</h2>
+        <input type="text" id="username" placeholder="Username" style="width:100%; padding:12px; margin-bottom:20px; border-radius:10px; border:1px solid #ddd; box-sizing: border-box;">
+        <button onclick="startApp()" id="txtLoginBtn" style="background:var(--accent); color:white; padding:12px; border:none; border-radius:10px; width:100%; cursor:pointer; font-weight:bold;">LOGIN</button>
+    </div>
+</div>
+
+<div class="container" id="app" style="display:none;">
+    <div class="header-nav">
+        <h2 id="txtWelcome">Ciao, </h2>
+        <button class="lang-btn" onclick="toggleLang()">IT / EN</button>
+    </div>
+    <div class="search-section">
+        <input type="text" id="fruitSearch" placeholder="🔍 Cerca frutto..." oninput="searchFruit()">
+        <div id="dropdown" class="dropdown"></div>
+        <img id="fruitImg" src="">
+    </div>
+    <div class="grid" id="paramGrid"></div>
+    <div class="score-box">
+        <span id="txtLabelScore">Punteggio Algoritmico</span>
+        <div id="finalScore">0</div>
+        <div id="tierLabel">Tier: -</div>
+        <button class="btn-upload" onclick="uploadFruit()" id="txtBtnUpload">🚀 SINCRONIZZA DATI</button>
+    </div>
+    <div style="background:white; border-radius:20px; padding:20px;"><canvas id="radarChart"></canvas></div>
+    <div class="lists">
+        <div class="list-box"><h3 id="txtLabelMyList">La Mia Classifica</h3><div id="myList"></div></div>
+        <div class="list-box"><h3 id="txtLabelGlobal">Media Globale</h3><div id="globalList"></div></div>
+    </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyASl7UbctX-4weq8w94ZUxCrOIhl3jjqME",
+  authDomain: "suv-f-18d65.firebaseapp.com",
+  databaseURL: "https://suv-f-18d65-default-rtdb.firebaseio.com",
+  projectId: "suv-f-18d65",
+  storageBucket: "suv-f-18d65.firebasestorage.app",
+  messagingSenderId: "138636031515",
+  appId: "1:138636031515:web:5708e43d7f3e8283157abe",
+  measurementId: "G-94ML0YLWT8"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let lang = 'it';
+let user = "";
+let chart;
+
+const uiTexts = {
+    it: { loginTitle: "SUV-F ACCESS", loginBtn: "ACCEDI", welcome: "Ciao, ", searchPlaceholder: "🔍 Cerca frutto...", labelScore: "Punteggio Algoritmico Pesato", btnUpload: "🚀 SINCRONIZZA CON IL MONDO", labelMyList: "La Mia Classifica", labelGlobal: "Media Globale (Community)", intensity: "Intensità", relevance: "Rilevanza", malus: "MALUS", syncAlert: "Dati Sincronizzati!", selectAlert: "Seleziona un frutto!", chartLabel: "Profilo Frutto" },
+    en: { loginTitle: "SUV-F ACCESS", loginBtn: "LOGIN", welcome: "Hello, ", searchPlaceholder: "🔍 Search fruit...", labelScore: "Weighted Algorithmic Score", btnUpload: "🚀 SYNC WITH THE WORLD", labelMyList: "My Rankings", labelGlobal: "Global Average (Community)", intensity: "Intensity", relevance: "Relevance", malus: "MALUS", syncAlert: "Data Synced!", selectAlert: "Please select a fruit!", chartLabel: "Fruit Profile" }
+};
+
+const params = [
+    { it: "Grado Brix", en: "Brix Degree", info_it: "Dolcezza (Avocado=0, Dattero=100)", info_en: "Sweetness (Avocado=0, Date=100)" },
+    { it: "Acidità", en: "Acidity", info_it: "Note aspre (Limone=100)", info_en: "Sour notes (Lemon=100)" },
+    { it: "Intensità Sapore", en: "Flavor Intensity", info_it: "Potenza aromatica al morso.", info_en: "Flavor power upon biting." },
+    { it: "Aftertaste", en: "Aftertaste", info_it: "Persistenza del sapore dopo mangiato.", info_en: "Flavor persistence after eating." },
+    { it: "Astringenza", en: "Astringency", info_it: "Quanto lega la bocca? (Cachi acerbo).", info_en: "Does it dry out your mouth?" },
+    { it: "Crunchiness", en: "Crunchiness", info_it: "Croccantezza sorda e profonda.", info_en: "Deep, thumping crunch." },
+    { it: "Crispyness", en: "Crispyness", info_it: "Croccantezza superficiale (Buccia uva).", info_en: "Glassy surface crunch." },
+    { it: "Carnosità", en: "Fleshiness", info_it: "Densità della polpa (Papaya=100).", info_en: "Pulp density (Papaya=100)." },
+    { it: "Succosità", en: "Juiciness", info_it: "Volume di succo rilasciato.", info_en: "Volume of juice released." },
+    { it: "Cremosità", en: "Creaminess", info_it: "Consistenza vellutata (Avocado).", info_en: "Velvety texture (Avocado)." },
+    { it: "Viscidità", en: "Sliminess", info_it: "Sensazione gelatinosa.", info_en: "Gelatinous sensation." },
+    { it: "Farinosità", en: "Mealiness", info_it: "Probabilità di consistenza sabbiosa.", info_en: "Likelihood of sandy texture." },
+    { it: "Filacciame", en: "Stringiness", info_it: "Fibre o fili tra i denti.", info_en: "Strings between teeth." },
+    { it: "Indice Conati", en: "Gag Index", info_it: "Fastidio fibre in gola.", info_en: "Throat fiber discomfort." },
+    { it: "Sound Design", en: "Sound Design", info_it: "Soddisfazione del rumore (crunch/pop).", info_en: "Sound satisfaction (crunch/pop)." },
+    { it: "Costanza", en: "Consistency", info_it: "Ananas Factor: probabilità di trovarlo buono.", info_en: "Probability of it being good." },
+    { it: "Sex Appeal", en: "Sex Appeal", info_it: "Carisma sociale del frutto.", info_en: "Social charisma of the fruit." },
+    { it: "Sbucciabilità", en: "Peelability", info_it: "Facilità di sbucciatura.", info_en: "Peeling ease." },
+    { it: "Versatilità", en: "Versatility", info_it: "Usi (succo, salato, cocktail).", info_en: "Uses (juice, savory, cocktails)." },
+    { it: "Spreco", en: "Waste", info_it: "Rapporto polpa/scarto.", info_en: "Pulp/waste ratio." }
+];
+
+function toggleLang() { lang = lang === 'it' ? 'en' : 'it'; updateUITexts(); renderGrid(); update(); }
+function updateUITexts() { const t = uiTexts[lang]; document.getElementById('txtLoginTitle').innerText = t.loginTitle; document.getElementById('txtLoginBtn').innerText = t.loginBtn; document.getElementById('txtWelcome').innerText = t.welcome + user; document.getElementById('fruitSearch').placeholder = t.searchPlaceholder; document.getElementById('txtLabelScore').innerText = t.labelScore; document.getElementById('txtBtnUpload').innerText = t.btnUpload; document.getElementById('txtLabelMyList').innerText = t.labelMyList; document.getElementById('txtLabelGlobal').innerText = t.labelGlobal; }
+function startApp() { user = document.getElementById('username').value.trim(); if(!user) return; document.getElementById('loginScreen').style.display = 'none'; document.getElementById('app').style.display = 'block'; updateUITexts(); renderGrid(); loadData(); }
+function renderGrid() { const grid = document.getElementById('paramGrid'); grid.innerHTML = ""; params.forEach((p, i) => { grid.innerHTML += `<div class="param-card"><button class="info-btn" data-info="${lang === 'it' ? p.info_it : p.info_en}">i</button><strong>${lang === 'it' ? p.it : p.en}</strong><div style="font-size:0.7em; margin-top:10px;">${uiTexts[lang].intensity}: <span id="vi_${i}">50</span> ${uiTexts[lang].relevance}: <span id="wi_${i}">50</span></div><input type="range" id="v_${i}" min="0" max="100" value="50" oninput="update()"><input type="range" id="w_${i}" min="0" max="100" value="50" oninput="update()" style="filter:grayscale(1) brightness(1.2)"><label style="font-size:0.75em; display:block; margin-top:5px; cursor:pointer;"><input type="checkbox" id="m_${i}" onchange="update()"> ${uiTexts[lang].malus}</label></div>`; }); }
+function update() { let score = 0; let data = []; params.forEach((_, i) => { const v = parseInt(document.getElementById(`v_${i}`).value); const w = parseInt(document.getElementById(`w_${i}`).value); const m = document.getElementById(`m_${i}`).checked; document.getElementById(`vi_${i}`).innerText = v; document.getElementById(`wi_${i}`).innerText = w; score += m ? -(v * w / 10) : (v * w / 10); data.push(v); }); const final = Math.round(score); document.getElementById('finalScore').innerText = final; let tier = "F-Tier"; if(final > 1500) tier = "God-Tier"; else if(final > 1000) tier = "S-Tier"; else if(final > 500) tier = "A-Tier"; else if(final > 0) tier = "B-Tier"; document.getElementById('tierLabel').innerText = "Tier: " + tier; drawChart(data); }
+function drawChart(data) { const ctx = document.getElementById('radarChart').getContext('2d'); if(chart) chart.destroy(); chart = new Chart(ctx, { type: 'radar', data: { labels: params.map(p => lang === 'it' ? p.it : p.en), datasets: [{ label: uiTexts[lang].chartLabel, data, backgroundColor: 'rgba(52, 152, 219, 0.2)', borderColor: '#3498db' }] }, options: { scales: { r: { min: 0, max: 100, ticks: { display: false } } } } }); }
+function searchFruit() { const s = document.getElementById('fruitSearch').value.toLowerCase(); const dd = document.getElementById('dropdown'); dd.innerHTML = ""; if(!s) { dd.style.display = 'none'; return; } const fList = ["Mela", "Banana", "Mango", "Arancia", "Ananas", "Avocado", "Cachi", "Anguria", "Mirtillo", "Uva", "Pesca", "Cocco", "Kiwi", "Fragola", "Ciliegia", "Papaya", "Pera"]; fList.filter(f => f.toLowerCase().includes(s)).forEach(f => { const div = document.createElement('div'); div.className = "dropdown-item"; div.innerText = f; div.onclick = () => { document.getElementById('fruitSearch').value = f; document.getElementById('fruitImg').src = `https://source.unsplash.com{f},fruit`; document.getElementById('fruitImg').style.display = "block"; dd.style.display = 'none'; }; dd.appendChild(div); }); dd.style.display = 'block'; }
+function uploadFruit() { const f = document.getElementById('fruitSearch').value; const s = parseInt(document.getElementById('finalScore').innerText); if(!f) return alert(uiTexts[lang].selectAlert); db.ref(`personal/${user}/${f}`).set(s); db.ref(`global/${f}`).push(s); alert(uiTexts[lang].syncAlert); loadData(); }
+function loadData() { db.ref(`personal/${user}`).on('value', snap => { const items = Object.entries(snap.val() || {}).sort((a,b)=>b-a); document.getElementById('myList').innerHTML = items.map(i => `<div class="list-item"><span>${i}</span><strong>${i} PT</strong></div>`).join(''); }); db.ref(`global`).on('value', snap => { const g = snap.val() || {}; const averages = Object.entries(g).map(([name, scores]) => { const vals = Object.values(scores); return { name, score: Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) }; }).sort((a,b)=>b.score-a.score); document.getElementById('globalList').innerHTML = averages.map(i => `<div class="list-item"><span>${i.name}</span><strong>${i.score} PT</strong></div>`).join(''); }); }
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+</script>
+</body>
+</html>
+

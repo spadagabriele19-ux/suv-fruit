@@ -2,339 +2,292 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SUV-F | BOTANICAL ANALYTICAL SYSTEM PRO</title>
-    
-    <!-- Librerie Core -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUV-F | Global Ranking Edition</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-
     <style>
-        :root {
-            --bg: #fffcfd; --accent: #f06292; --dark: #263238; --white: #ffffff;
-            --gray-l: #eceff1; --gray-d: #90a4ae; --malos: #ff5252;
-            --c-gusto: #ffb7b2; --c-meccanica: #b2e2f2; --c-psiche: #f2b2e2; --c-logistica: #ffdfba;
+        :root { 
+            --bg: #fffcfd;
+            --accent-pink: #ffcce0; 
+            --accent-dark: #f06292;
+            --text: #4e342e;
+            --gray: #fce4ec;
+            --malos: #ff8a80;
+            --c-gusto: #ffb7b2;
+            --c-meccanica: #b2e2f2;
+            --c-psiche: #f2b2e2;
+            --c-logistica: #ffdfba;
         }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding-bottom: 100px; color: var(--text); overflow-x: hidden; }
+        
+        .navbar { background: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); margin: 0; color: var(--dark); padding-bottom: 100px; }
+        .screen { display: none; padding: 15px; max-width: 1200px; margin: auto; animation: fadeIn 0.3s ease; }
+        .active { display: block; }
 
-        /* Header & Nav */
-        .header { background: var(--white); padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--white); display: flex; justify-content: space-around; padding: 15px 0; border-top: 2px solid var(--gray-l); z-index: 2000; }
-        .nav-btn { cursor: pointer; font-size: 0.7rem; font-weight: 900; color: var(--gray-d); text-align: center; flex: 1; text-transform: uppercase; }
-        .nav-btn.active { color: var(--accent); }
+        /* Login */
+        .card-auth { background: white; padding: 30px; border-radius: 35px; text-align: center; box-shadow: 0 15px 35px rgba(240,98,146,0.1); max-width: 500px; margin: 40px auto; border: 1px solid var(--gray); }
+        
+        /* Fruit Search */
+        .search-box { width: 100%; padding: 20px; border-radius: 25px; border: 2px solid var(--gray); font-size: 1.2em; font-weight: 900; color: var(--accent-dark); text-align: center; outline: none; margin-bottom: 20px; box-sizing: border-box; }
 
-        /* Screen Logic */
-        .screen { display: none; padding: 20px; max-width: 1200px; margin: auto; animation: fadeIn 0.3s ease; }
-        .screen.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Auth */
-        .auth-box { max-width: 400px; margin: 100px auto; text-align: center; background: white; padding: 40px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .input-std { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid var(--gray-l); border-radius: 15px; font-size: 1rem; outline: none; text-align: center; }
-        .btn-prime { background: var(--accent); color: white; border: none; padding: 15px 30px; border-radius: 15px; font-weight: 900; cursor: pointer; width: 100%; margin-top: 10px; }
-
-        /* Search & Validation */
-        .search-area { position: sticky; top: 70px; z-index: 950; background: var(--bg); padding: 15px 0; }
-        .search-input { width: 100%; padding: 20px; border-radius: 20px; border: 4px solid var(--gray-l); font-size: 1.2rem; font-weight: 900; outline: none; transition: 0.3s; }
-        .search-input.valid { border-color: #81c784; background: #f1f8e9; }
-        .search-input.invalid { border-color: #ff8a80; background: #fff5f2; }
-
-        /* Grid & Cards */
-        .cat-tag { padding: 12px 20px; border-radius: 15px; margin: 30px 0 15px; font-weight: 900; text-transform: uppercase; display: inline-block; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
-        .card { background: white; padding: 20px; border-radius: 25px; border-left: 10px solid var(--gray-l); position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
-        .card.malos-mode { border-left-color: var(--malos) !important; background: #fff9f9; }
-
-        .m-toggle { position: absolute; top: 15px; right: 15px; font-size: 0.6rem; font-weight: 900; padding: 5px 10px; border-radius: 8px; background: var(--gray-l); cursor: pointer; color: var(--gray-d); }
-        .m-toggle.active { background: var(--malos); color: white; }
+        /* Parametri */
+        .group-header { padding: 14px; border-radius: 15px; color: #444; margin-top: 30px; font-weight: 900; text-transform: uppercase; font-size: 0.9em; letter-spacing: 1.5px; border-bottom: 4px solid rgba(0,0,0,0.05); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; margin-top: 15px; }
+        .param-card { background: white; padding: 20px; border-radius: 25px; border-left: 10px solid var(--gray); box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+        .param-card.malos-mode { border-left-color: var(--malos) !important; background: #fffcfc; }
+        
+        .malos-btn { font-size: 0.65em; padding: 6px 12px; border-radius: 10px; border: 1px solid #eee; cursor: pointer; float: right; font-weight: bold; color: #bbb; background: white; }
+        .malos-active { background: var(--malos); color: white; border-color: var(--malos); }
 
         /* Sliders */
-        .s-wrap { margin-top: 15px; }
-        .s-label { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 800; color: var(--gray-d); margin-bottom: 4px; }
-        .s-label span { color: var(--accent); }
-        input[type=range] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+        .slider-label { font-size: 0.75em; font-weight: bold; color: #888; display: flex; justify-content: space-between; margin-top: 10px; }
+        .slider-label span { color: var(--accent-dark); font-weight: 900; }
+        input[type=range] { width: 100%; margin: 8px 0; accent-color: var(--accent-dark); cursor: pointer; }
 
-        /* Score Display */
-        .score-panel { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; background: var(--dark); color: white; padding: 20px; border-radius: 25px; display: flex; justify-content: space-between; align-items: center; z-index: 1500; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
-        .score-big { font-size: 2.5rem; font-weight: 900; line-height: 1; }
-        .save-btn { background: var(--accent); border: none; color: white; padding: 12px 25px; border-radius: 15px; font-weight: 900; cursor: pointer; transition: 0.2s; }
-        .save-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+        /* Classifiche */
+        .rank-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .rank-col { background: #fff9fb; padding: 20px; border-radius: 30px; border: 1px solid var(--gray); }
+        .rank-item { background: white; padding: 12px; border-radius: 15px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.03); font-size: 0.85em; }
+        .rank-score { background: var(--accent-dark); color: white; padding: 4px 10px; border-radius: 8px; font-weight: 900; }
 
-        /* Lists */
-        .rank-row { background: white; padding: 15px 20px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--gray-l); }
-        .rank-name { font-weight: 800; }
-        .rank-val { font-weight: 900; color: var(--accent); }
+        /* Nav */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 15px 0; z-index: 1000; border-top: 1px solid var(--gray); }
+        .nav-item { color: #d1d1d1; cursor: pointer; font-size: 0.65em; font-weight: 900; text-transform: uppercase; text-align: center; flex: 1; }
+        .nav-item.active-nav { color: var(--accent-dark); }
+        .nav-icon { display: block; font-size: 1.6em; margin-bottom: 4px; }
+
+        @media (max-width: 768px) { .rank-container { grid-template-columns: 1fr; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<div class="header" id="ui-header" style="display:none;">
-    <div style="font-weight: 900; color: var(--accent);">SUV-F SYSTEM <span style="color:var(--dark); font-size: 0.7rem; opacity:0.5;">v3.1 ABSOLUTE</span></div>
-    <select id="lang" onchange="initApp()" style="border:none; font-weight:900; background:var(--gray-l); padding:5px; border-radius:8px;">
-        <option value="it">🇮🇹 IT</option>
-        <option value="en">🇬🇧 EN</option>
-    </select>
+<div class="navbar">
+    <div style="font-weight: 900; color: var(--accent-dark);">SUV-F GLOBAL</div>
+    <div id="userDisplay" style="font-size: 0.8em; font-weight: 700; opacity: 0.6;"></div>
 </div>
 
-<!-- SCREEN: LOGIN -->
-<div id="scr-auth" class="screen active">
-    <div class="auth-box">
-        <h2 style="margin-top:0">Identificazione Analista</h2>
-        <input type="text" id="user-id" class="input-std" placeholder="Inserisci Nome o ID">
-        <button class="btn-prime" onclick="login()">ACCEDI AL SISTEMA</button>
-    </div>
-</div>
-
-<!-- SCREEN: VOTA -->
-<div id="scr-vota" class="screen">
-    <div class="search-area">
-        <input list="list-frutti" id="f-search" class="search-input" placeholder="CERCA FRUTTO..." oninput="validateFruit()">
-        <datalist id="list-frutti"></datalist>
-        <div id="v-msg" style="text-align:center; font-size: 0.7rem; font-weight:900; margin-top:5px;"></div>
-    </div>
-    
-    <div id="params-engine"></div>
-</div>
-
-<!-- SCREEN: RADAR -->
-<div id="scr-radar" class="screen">
-    <h2 style="text-align:center; font-weight:900;">PROFILO ORGANOLETTICO</h2>
-    <div style="background:white; padding:20px; border-radius:30px; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
-        <canvas id="mainRadar"></canvas>
-    </div>
-</div>
-
-<!-- SCREEN: RANKING -->
-<div id="scr-rank" class="screen">
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-        <div>
-            <h3 style="font-weight:900; text-transform:uppercase; font-size:0.8rem; color:var(--gray-d);">MIEI DATI</h3>
-            <div id="list-user"></div>
+<div id="loginScreen" class="screen active">
+    <div class="card-auth">
+        <h1 style="color:var(--accent-dark); margin:0; letter-spacing: 2px;">SUV-F</h1>
+        <p style="font-size: 0.8em; color: #aaa; margin-bottom: 30px;">Professional Fruit Rating System</p>
+        <input type="text" id="username" placeholder="Inserisci il tuo ID" style="width:85%; padding:18px; margin-bottom:15px; border-radius:15px; border:2px solid var(--gray); outline:none; text-align: center; font-weight: bold;">
+        <div style="margin-bottom:20px;">
+            <label style="font-size:0.85em; color:#888; cursor:pointer;"><input type="checkbox" id="rememberMe"> Resta connesso</label>
         </div>
-        <div>
-            <h3 style="font-weight:900; text-transform:uppercase; font-size:0.8rem; color:var(--gray-d);">GLOBALE</h3>
-            <div id="list-global"></div>
+        <button onclick="login()" style="width:90%; background:var(--accent-dark); color:white; padding:18px; border:none; border-radius:15px; font-weight:900; cursor:pointer;">ACCEDI</button>
+    </div>
+</div>
+
+<div id="ratingScreen" class="screen">
+    <input list="fruits" id="fruitInput" class="search-box" placeholder="Cerca un frutto nel mondo...">
+    <datalist id="fruits">
+        </datalist>
+
+    <div id="dynamicParams"></div>
+
+    <div style="margin-top:40px; background: var(--accent-dark); color:white; padding:45px; border-radius:40px; text-align:center;">
+        <h3 style="margin:0; opacity:0.8; font-size:0.9em; letter-spacing:2px;">SUV-F INDEX</h3>
+        <div id="finalScore" style="font-size: 6em; font-weight: 900; margin: 10px 0;">0</div>
+        <button onclick="saveData()" style="background:white; color:var(--accent-dark); border:none; padding:18px 60px; border-radius:20px; font-weight:900; cursor:pointer;">SALVA ANALISI</button>
+    </div>
+</div>
+
+<div id="algoScreen" class="screen">
+    <h2 style="color:var(--accent-dark);">🧮 Logica di Calcolo</h2>
+    <div style="background:white; padding:25px; border-radius:30px; border-left:10px solid var(--accent-dark); box-shadow: 0 5px 15px rgba(0,0,0,0.04);">
+        <p>Il sistema calcola la qualità pesata ogni millisecondo:</p>
+        <div style="background: #fefefe; padding:20px; border-radius:15px; border:1px solid #eee; font-family:monospace; font-size:1.4em; text-align:center; color:var(--accent-dark); margin: 20px 0;">
+            Score = Σ (Valore * Importanza%) * MALOS
+        </div>
+        <p><b>Classifica Globale:</b> Non è una semplice media dei voti finali. Il sistema aggrega i singoli parametri di ogni utente per definire la perfezione matematica di ogni frutto sulla Terra.</p>
+    </div>
+</div>
+
+<div id="chartScreen" class="screen">
+    <div style="background:white; border-radius:40px; padding:20px; height: 80vh; box-shadow:0 10px 40px rgba(0,0,0,0.05);">
+        <canvas id="radarChart"></canvas>
+    </div>
+</div>
+
+<div id="rankScreen" class="screen">
+    <div class="rank-container">
+        <div class="rank-col">
+            <h3 style="color:var(--accent-dark); text-align: center;">🏆 PERSONALE</h3>
+            <div id="myList"></div>
+        </div>
+        <div class="rank-col">
+            <h3 style="color:var(--accent-dark); text-align: center;">🌎 GLOBALE</h3>
+            <div id="globalList">Caricamento medie mondiali...</div>
         </div>
     </div>
 </div>
 
-<!-- UI FLOATING ELEMENTS -->
-<div class="score-panel" id="ui-score" style="display:none;">
-    <div>
-        <div style="font-size:0.6rem; font-weight:900; opacity:0.6; text-transform:uppercase;">Punteggio SUV-F</div>
-        <div class="score-big" id="total-val">0</div>
-    </div>
-    <button class="save-btn" id="btn-save" disabled onclick="saveAnalysis()">SALVA DATABASE</button>
-</div>
-
-<div class="nav-bar" id="ui-nav" style="display:none;">
-    <div class="nav-btn active" onclick="showScr('vota', this)">Analisi</div>
-    <div class="nav-btn" onclick="showScr('radar', this)">Radar</div>
-    <div class="nav-btn" onclick="showScr('rank', this)">Ranking</div>
+<div id="mainNav" class="bottom-nav" style="display:none;">
+    <div class="nav-item active-nav" onclick="showTab('ratingScreen', this)"><span class="nav-icon">🍎</span>VOTA</div>
+    <div class="nav-item" onclick="showTab('algoScreen', this)"><span class="nav-icon">🧮</span>ALGORITMO</div>
+    <div class="nav-item" onclick="showTab('chartScreen', this)"><span class="nav-icon">📊</span>GRAFICO</div>
+    <div class="nav-item" onclick="showTab('rankScreen', this)"><span class="nav-icon">🏆</span>CLASSIFICHE</div>
 </div>
 
 <script>
-// --- CONFIGURAZIONE INTEGRALE FIREBASE ---
+// CONFIGURAZIONE FIREBASE
 const firebaseConfig = {
     apiKey: "AIzaSyASl7UbctX-4weq8w94ZUxCrOIhl3jjqME",
     authDomain: "suv-f-18d65.firebaseapp.com",
     databaseURL: "https://suv-f-18d65-default-rtdb.firebaseio.com",
     projectId: "suv-f-18d65",
+    storageBucket: "suv-f-18d65.firebasestorage.app",
     appId: "1:138636031515:web:5708e43d7f3e8283157abe"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// --- STATO APPLICAZIONE ---
 let user = "";
-let malos = {};
-let chart = null;
+let malosState = {};
+let radarChart = null;
 
-// --- DATABASE BOTANICO COMPLETO (700+ VOCI) ---
-// NOTA: Qui è presente l'intero elenco richiesto, senza tagli.
-const DATABASE = [
-    {it:"Abiu", en:"Abiu"}, {it:"Açai", en:"Açai"}, {it:"Acerola", en:"Acerola"}, {it:"Ackee", en:"Ackee"}, {it:"African Breadfruit", en:"African Breadfruit"}, {it:"African Mango", en:"African Mango"}, {it:"African Star Apple", en:"African Star Apple"}, {it:"Agave", en:"Agave"}, {it:"Akebi", en:"Akebi"}, {it:"Albicocca", en:"Apricot"}, {it:"Albicocca Reale d’Imola", en:"Imola Royal Apricot"}, {it:"Albicocca Vesuviana", en:"Vesuvian Apricot"}, {it:"Albicocca Val Venosta", en:"Venosta Valley Apricot"}, {it:"Albicocca Precoce", en:"Early Apricot"}, {it:"Alchechengi", en:"Physalis"}, {it:"Alexandria Strawberry", en:"Alexandria Strawberry"}, {it:"Alpine Strawberry", en:"Alpine Strawberry"}, {it:"Amanatsu", en:"Amanatsu"}, {it:"Amara", en:"Amara"}, {it:"Ambarella", en:"Ambarella"}, {it:"Ambrosia Apple", en:"Ambrosia Apple"}, {it:"Amla", en:"Amla"}, {it:"Ananas", en:"Pineapple"}, {it:"Ananas Smooth Cayenne", en:"Smooth Cayenne Pineapple"}, {it:"Ananas Victoria", en:"Victoria Pineapple"}, {it:"Ananas Rosso", en:"Red Pineapple"}, {it:"Anacardo (Mela di)", en:"Cashew Apple"}, {it:"Anguria", en:"Watermelon"}, {it:"Anguria Crimson Sweet", en:"Crimson Sweet Watermelon"}, {it:"Anguria Sugar Baby", en:"Sugar Baby Watermelon"}, {it:"Anguria Gialla", en:"Yellow Watermelon"}, {it:"Anguria Senza Semi", en:"Seedless Watermelon"}, {it:"Anguria Mini", en:"Mini Watermelon"}, {it:"Annona Cherimola", en:"Cherimoya"}, {it:"Annurca Apple", en:"Annurca Apple"}, {it:"Appleberry", en:"Appleberry"}, {it:"Aprium", en:"Aprium"}, {it:"Araca-Boi", en:"Araca-Boi"}, {it:"Arancia", en:"Orange"}, {it:"Arancia Navel", en:"Navel Orange"}, {it:"Arancia Valencia", en:"Valencia Orange"}, {it:"Arancia Tarocco", en:"Tarocco Orange"}, {it:"Arancia Sanguinello", en:"Sanguinello Orange"}, {it:"Arancia Moro", en:"Moro Orange"}, {it:"Arancia Bionda", en:"Blonde Orange"}, {it:"Arancia Rossa", en:"Blood Orange"}, {it:"Argan", en:"Argan"}, {it:"Aronia", en:"Aronia"}, {it:"Asian Pear", en:"Asian Pear"}, {it:"Atemoya", en:"Atemoya"}, {it:"Australian Desert Lime", en:"Australian Desert Lime"}, {it:"Autumn Royal Grape", en:"Autumn Royal Grape"}, {it:"Avocado", en:"Avocado"}, {it:"Avocado Hass", en:"Hass Avocado"}, {it:"Avocado Fuerte", en:"Fuerte Avocado"}, {it:"Avocado Pinkerton", en:"Pinkerton Avocado"}, {it:"Avocado Reed", en:"Reed Avocado"}, {it:"Azzeruolo Bianco", en:"White Azarole"}, {it:"Azzeruolo Rosso", en:"Red Azarole"}, {it:"Alupag", en:"Alupag"}, {it:"Alligator Apple", en:"Alligator Apple"}, {it:"Aratiles", en:"Aratiles"}, {it:"Araza", en:"Araza"}, {it:"Arabica Coffee Cherry", en:"Arabica Coffee Cherry"}, {it:"Arkansas Black Apple", en:"Arkansas Black Apple"}, {it:"Amarena", en:"Sour Cherry"}, {it:"Alphonso Mango", en:"Alphonso Mango"}, {it:"Alice Apple", en:"Alice Apple"}, {it:"Ashmead’s Kernel", en:"Ashmead’s Kernel"}, {it:"Aurora Pear", en:"Aurora Pear"}, {it:"Avana Mandarino", en:"Avana Mandarin"}, {it:"Akebia Quinata", en:"Akebia Quinata"}, {it:"American Persimmon", en:"American Persimmon"}, {it:"Anjou Pear", en:"Anjou Pear"},
-    {it:"Babaco", en:"Babaco"}, {it:"Bacuri", en:"Bacuri"}, {it:"Bael", en:"Bael"}, {it:"Banana Cavendish", en:"Cavendish Banana"}, {it:"Banana Blue Java", en:"Blue Java Banana"}, {it:"Banana Rossa", en:"Red Banana"}, {it:"Banana Nana", en:"Dwarf Banana"}, {it:"Bananito", en:"Bananito"}, {it:"Barbadine", en:"Barbadine"}, {it:"Barbados Cherry", en:"Barbados Cherry"}, {it:"Barberry", en:"Barberry"}, {it:"Batuan", en:"Batuan"}, {it:"Beach Plum", en:"Beach Plum"}, {it:"Bearberry", en:"Bearberry"}, {it:"Bergamotto", en:"Bergamot"}, {it:"Bignay", en:"Bignay"}, {it:"Bilberry", en:"Bilberry"}, {it:"Bilimbi", en:"Bilimbi"}, {it:"Biriba", en:"Biriba"}, {it:"Biricoccolo", en:"Biricoccolo"}, {it:"Bitter Melon", en:"Bitter Melon"}, {it:"Black Apple", en:"Black Apple"}, {it:"Black Cherry", en:"Black Cherry"}, {it:"Black Currant", en:"Black Currant"}, {it:"Black Mulberry", en:"Black Mulberry"}, {it:"Black Sapote", en:"Black Sapote"}, {it:"Blackberry", en:"Blackberry"}, {it:"Blood Orange", en:"Blood Orange"}, {it:"Blue Passionfruit", en:"Blue Passionfruit"}, {it:"Blueberry", en:"Blueberry"}, {it:"Boysenberry", en:"Boysenberry"}, {it:"Bramble", en:"Bramble"}, {it:"Brazil Nut (Fruit)", en:"Brazil Nut Fruit"}, {it:"Breadfruit", en:"Breadfruit"}, {it:"Brush Cherry", en:"Brush Cherry"}, {it:"Buddha’s Hand", en:"Buddha’s Hand"}, {it:"Burmese Grape", en:"Burmese Grape"}, {it:"Button Mangosteen", en:"Button Mangosteen"}, {it:"Bing Cherry", en:"Bing Cherry"}, {it:"Black Tartarian", en:"Black Tartarian"}, {it:"Blenheim Apricot", en:"Blenheim Apricot"}, {it:"Bosc Pear", en:"Bosc Pear"}, {it:"Braeburn Apple", en:"Braeburn Apple"}, {it:"Bramley Apple", en:"Bramley Apple"}, {it:"Brogiotto Nero Fig", en:"Brogiotto Nero Fig"}, {it:"Brogiotto Bianco Fig", en:"Brogiotto Bianco Fig"}, {it:"Black Amber Plum", en:"Black Amber Plum"}, {it:"Blackcurrant", en:"Blackcurrant"}, {it:"Burlat Cherry", en:"Burlat Cherry"}, {it:"Blue Honeysuckle", en:"Honeyberry"}, {it:"Baobab Fruit", en:"Baobab Fruit"},
-    {it:"Cacao", en:"Cacao"}, {it:"Cactus Pear", en:"Cactus Pear"}, {it:"Caco (Kaki)", en:"Persimmon"}, {it:"Caco Mela", en:"Apple Persimmon"}, {it:"Caco Tipo", en:"Classic Persimmon"}, {it:"Calamansi", en:"Calamansi"}, {it:"Calamondin", en:"Calamondin"}, {it:"Camu Camu", en:"Camu Camu"}, {it:"Canistel", en:"Canistel"}, {it:"Cantalupo", en:"Cantaloupe"}, {it:"Cape Gooseberry", en:"Cape Gooseberry"}, {it:"Carambola", en:"Starfruit"}, {it:"Carissa", en:"Carissa"}, {it:"Carruba", en:"Carob"}, {it:"Castagna", en:"Chestnut"}, {it:"Caviar Lime", en:"Finger Lime"}, {it:"Cedro Diamante", en:"Diamante Citron"}, {it:"Cedro Voice", en:"Voice Citron"}, {it:"Cempedak", en:"Cempedak"}, {it:"Ceylon Gooseberry", en:"Ceylon Gooseberry"}, {it:"Chayote", en:"Chayote"}, {it:"Cherimoya", en:"Cherimoya"}, {it:"Cherry", en:"Cherry"}, {it:"Chinotto", en:"Chinotto"}, {it:"Chokeberry", en:"Chokeberry"}, {it:"Ciliegia Ferrovia", en:"Ferrovia Cherry"}, {it:"Ciliegia Durone di Vignola", en:"Durone Cherry"}, {it:"Ciliegia Marasca", en:"Marasca Cherry"}, {it:"Ciliegia Visciola", en:"Visciola Cherry"}, {it:"Ciliegia Giorgia", en:"Giorgia Cherry"}, {it:"Ciliegia Bigarreau", en:"Bigarreau Cherry"}, {it:"Ciliegia Moretta", en:"Moretta Cherry"}, {it:"Ciliegia Lapins", en:"Lapins Cherry"}, {it:"Citron", en:"Citron"}, {it:"Clementina", en:"Clementine"}, {it:"Cloudberry", en:"Cloudberry"}, {it:"Cocco", en:"Coconut"}, {it:"Cocona", en:"Cocona"}, {it:"Cocomero", en:"Watermelon"}, {it:"Coffee Berry", en:"Coffee Berry"}, {it:"Corniolo", en:"Cornelian Cherry"}, {it:"Crab Apple", en:"Crab Apple"}, {it:"Cranberry", en:"Cranberry"}, {it:"Cudrania", en:"Cudrania"}, {it:"Curuba", en:"Curuba"}, {it:"Crimson Seedless Grape", en:"Crimson Seedless Grape"}, {it:"Cortland Apple", en:"Cortland Apple"}, {it:"Cosmic Crisp", en:"Cosmic Crisp Apple"}, {it:"Cox’s Orange Pippin", en:"Cox’s Orange Pippin"}, {it:"Cripps Pink", en:"Pink Lady"}, {it:"Cupuaçu", en:"Cupuaçu"}, {it:"Custard Apple", en:"Custard Apple"}, {it:"Cydonia", en:"Quince"}, {it:"Casaba Melon", en:"Casaba Melon"}, {it:"Charentais Melon", en:"Charentais Melon"}, {it:"Crenshaw Melon", en:"Crenshaw Melon"}, {it:"Caci mela", en:"Apple Persimmon"}, {it:"Carosello", en:"Carosello"}, {it:"Corbezzolo", en:"Strawberry Tree Fruit"},
-    {it:"Damson", en:"Damson"}, {it:"Dattero Medjool", en:"Medjool Date"}, {it:"Dattero Deglet Nour", en:"Deglet Nour Date"}, {it:"Dattero Hayani", en:"Hayani Date"}, {it:"Davidson’s Plum", en:"Davidson’s Plum"}, {it:"Dewberry", en:"Dewberry"}, {it:"Dragon Fruit Bianco", en:"White Dragon Fruit"}, {it:"Dragon Fruit Rosso", en:"Red Dragon Fruit"}, {it:"Dragon Fruit Giallo", en:"Yellow Dragon Fruit"}, {it:"Durian Musang King", en:"Musang King Durian"}, {it:"Durian D24", en:"D24 Durian"}, {it:"Eggfruit", en:"Eggfruit"}, {it:"Elderberry", en:"Elderberry"}, {it:"Elephant Apple", en:"Elephant Apple"}, {it:"Emu Apple", en:"Emu Apple"}, {it:"Etrog", en:"Etrog"}, {it:"Envy Apple", en:"Envy Apple"}, {it:"Empire Apple", en:"Empire Apple"}, {it:"Eureka Lemon", en:"Eureka Lemon"}, {it:"Falberry", en:"Falberry"}, {it:"Feijoa", en:"Feijoa"}, {it:"Fico Dottato", en:"Dottato Fig"}, {it:"Fico Settembrino", en:"Settembrino Fig"}, {it:"Fico Panaché", en:"Panaché Fig"}, {it:"Fico d’India Bianco", en:"White Prickly Pear"}, {it:"Fico d’India Rosso", en:"Red Prickly Pear"}, {it:"Fico d’India Giallo", en:"Yellow Prickly Pear"}, {it:"Finger Lime Pink", en:"Pink Finger Lime"}, {it:"Finger Lime Green", en:"Green Finger Lime"}, {it:"Finger Lime Yellow", en:"Yellow Finger Lime"}, {it:"Fragola", en:"Strawberry"}, {it:"Fragolina di bosco", en:"Wild Strawberry"}, {it:"Framboise", en:"Raspberry"}, {it:"Fuji Apple", en:"Fuji Apple"}, {it:"Fuyu Persimmon", en:"Fuyu Persimmon"}, {it:"Forelle Pear", en:"Forelle Pear"}, {it:"Faustrime", en:"Faustrime"}, {it:"Feronia", en:"Feronia"}, {it:"Flamboyant", en:"Flamboyant"}, {it:"Fairchild Tangerine", en:"Fairchild Tangerine"}, {it:"Fortune Mandarin", en:"Fortune Mandarin"}, {it:"Fantasia Nectarine", en:"Fantasia Nectarine"}, {it:"Flavortop", en:"Flavortop"}, {it:"Fairhaven Peach", en:"Fairhaven Peach"}, {it:"Fayette", en:"Fayette"}, {it:"Fiesta Apple", en:"Fiesta Apple"}, {it:"Florina", en:"Florina"}, {it:"Fortune Plum", en:"Fortune Plum"},
-    {it:"Galia Melon", en:"Galia Melon"}, {it:"Gamboge", en:"Gamboge"}, {it:"Garcinia", en:"Garcinia"}, {it:"Gelso Nero", en:"Black Mulberry"}, {it:"Gelso Bianco", en:"White Mulberry"}, {it:"Gelso Rosso", en:"Red Mulberry"}, {it:"Genip", en:"Genip"}, {it:"Giaca (Jackfruit)", en:"Jackfruit"}, {it:"Giuggiola", en:"Jujube"}, {it:"Goji Berry", en:"Goji Berry"}, {it:"Goldenberry", en:"Goldenberry"}, {it:"Gooseberry", en:"Gooseberry"}, {it:"Granadilla", en:"Granadilla"}, {it:"Grapefruit", en:"Grapefruit"}, {it:"Grapes", en:"Grapes"}, {it:"Greengage", en:"Greengage"}, {it:"Ground Cherry", en:"Ground Cherry"}, {it:"Grumichama", en:"Grumichama"}, {it:"Guanabana", en:"Soursop"}, {it:"Guava", en:"Guava"}, {it:"Guavaberry", en:"Guavaberry"}, {it:"Gala Apple", en:"Gala Apple"}, {it:"Golden Delicious", en:"Golden Delicious"}, {it:"Granny Smith", en:"Granny Smith"}, {it:"Giorgia Cherry", en:"Giorgia Cherry"}, {it:"Goccia d’Oro Plum", en:"Goccia d’Oro Plum"}, {it:"Guyot Pear", en:"Guyot Pear"}, {it:"Hackberry", en:"Hackberry"}, {it:"Hala Fruit", en:"Hala Fruit"}, {it:"Hardy Kiwi", en:"Hardy Kiwi"}, {it:"Hawthorn", en:"Hawthorn"}, {it:"Heirloom Tomato", en:"Heirloom Tomato"}, {it:"Highbush Blueberry", en:"Highbush Blueberry"}, {it:"Honeydew", en:"Honeydew"}, {it:"Huckleberry", en:"Huckleberry"}, {it:"Honeyberry", en:"Honeyberry"}, {it:"Honeycrisp Apple", en:"Honeycrisp Apple"}, {it:"Hyuganatsu", en:"Hyuganatsu"}, {it:"Hachiya Persimmon", en:"Hachiya Persimmon"}, {it:"Icaque", en:"Icaque"}, {it:"Ice Cream Bean", en:"Ice Cream Bean"}, {it:"Illawarra Plum", en:"Illawarra Plum"}, {it:"Imbe", en:"Imbe"}, {it:"Indian Fig", en:"Prickly Pear"}, {it:"Indian Gooseberry", en:"Amla"}, {it:"Indian Plum", en:"Indian Plum"}, {it:"Inga Edulis", en:"Ice Cream Bean"}, {it:"Interdonato Lemon", en:"Interdonato Lemon"}, {it:"Italia Grape", en:"Italia Grape"}, {it:"Jabuticaba", en:"Jabuticaba"}, {it:"Jackfruit", en:"Jackfruit"}, {it:"Jambul", en:"Jambul"}, {it:"Jatobà", en:"Jatobà"}, {it:"Jelly Plum", en:"Jelly Plum"}, {it:"Jicaro", en:"Jicaro"}, {it:"Jostaberry", en:"Jostaberry"}, {it:"Jujube", en:"Jujube"}, {it:"Juniper Berry", en:"Juniper Berry"}, {it:"Jazz Apple", en:"Jazz Apple"}, {it:"Jonagold", en:"Jonagold"}, {it:"Jonathan Apple", en:"Jonathan Apple"}, {it:"Juergen’s Plum", en:"Juergen’s Plum"},
-    {it:"Kaffir Lime", en:"Kaffir Lime"}, {it:"Kandis", en:"Kandis"}, {it:"Kapok", en:"Kapok"}, {it:"Karonda", en:"Karonda"}, {it:"Kei Apple", en:"Kei Apple"}, {it:"Kepel", en:"Kepel"}, {it:"Keule", en:"Keule"}, {it:"Kiwano", en:"Kiwano"}, {it:"Kiwi Hayward", en:"Hayward Kiwi"}, {it:"Kiwi Gold", en:"Gold Kiwi"}, {it:"Kokum", en:"Kokum"}, {it:"Korlan", en:"Korlan"}, {it:"Kumquat Nagami", en:"Nagami Kumquat"}, {it:"Kumquat Marumi", en:"Marumi Kumquat"}, {it:"Kundong", en:"Kundong"}, {it:"Kaiser Pear", en:"Kaiser Pear"}, {it:"Kanzi Apple", en:"Kanzi Apple"}, {it:"Keitt Mango", en:"Keitt Mango"}, {it:"Kent Mango", en:"Kent Mango"}, {it:"Lampone Rosso", en:"Red Raspberry"}, {it:"Lampone Giallo", en:"Yellow Raspberry"}, {it:"Lampone Nero", en:"Black Raspberry"}, {it:"Langsat", en:"Langsat"}, {it:"Lapsi", en:"Lapsi"}, {it:"Lemon", en:"Lemon"}, {it:"Lemon Aspen", en:"Lemon Aspen"}, {it:"Lime", en:"Lime"}, {it:"Limetta", en:"Limetta"}, {it:"Limonello", en:"Limonello"}, {it:"Litchi", en:"Lychee"}, {it:"Loganberry", en:"Loganberry"}, {it:"Longan", en:"Longan"}, {it:"Loquat", en:"Loquat"}, {it:"Lulo", en:"Lulo"}, {it:"Lychee", en:"Lychee"}, {it:"Lady Alice Apple", en:"Lady Alice Apple"}, {it:"Liberty Apple", en:"Liberty Apple"}, {it:"Lisbon Lemon", en:"Lisbon Lemon"}, {it:"Lucuma", en:"Lucuma"}, {it:"Mabolo", en:"Mabolo"}, {it:"Madrono", en:"Madrono"}, {it:"Malay Apple", en:"Malay Apple"}, {it:"Mamey Sapote", en:"Mamey Sapote"}, {it:"Mammee Apple", en:"Mammee Apple"}, {it:"Mamoncillo", en:"Mamoncillo"}, {it:"Mandarin", en:"Mandarin"}, {it:"Mangaba", en:"Mangaba"}, {it:"Mango Tommy Atkins", en:"Tommy Atkins Mango"}, {it:"Mango Kent", en:"Kent Mango"}, {it:"Mango Alphonso", en:"Alphonso Mango"}, {it:"Mangostano", en:"Mangosteen"}, {it:"Mano di Buddha", en:"Buddha’s Hand"}, {it:"Mapo", en:"Mapo"}, {it:"Maracuja", en:"Passion Fruit"}, {it:"Marang", en:"Marang"}, {it:"Marionberry", en:"Marionberry"}, {it:"Mayapple", en:"Mayapple"}, {it:"Mayhaw", en:"Mayhaw"}, {it:"Medlar", en:"Medlar"}, {it:"Melograno", en:"Pomegranate"}, {it:"Melone Retato", en:"Cantaloupe"}, {it:"Melone Mantovano", en:"Mantovano Melon"}, {it:"Melone Piel de Sapo", en:"Piel de Sapo"}, {it:"Mirtillo Nero", en:"Blackberry"}, {it:"Mirtillo Rosso", en:"Cranberry"}, {it:"Mirtillo Blu", en:"Blueberry"}, {it:"Miracle Fruit", en:"Miracle Fruit"}, {it:"Mock Strawberry", en:"Mock Strawberry"}, {it:"Monstera Deliciosa", en:"Monstera Deliciosa"}, {it:"Mora di rovo", en:"Blackberry"}, {it:"Mountain Pepper", en:"Mountain Pepper"}, {it:"Mulberry", en:"Mulberry"}, {it:"Mundu", en:"Mundu"}, {it:"Muscadine", en:"Muscadine"}, {it:"Muskmelon", en:"Muskmelon"}, {it:"McIntosh Apple", en:"McIntosh Apple"}, {it:"Mutsu Apple", en:"Mutsu Apple"}, {it:"Medlar (Nespola)", en:"Medlar"}, {it:"Meyer Lemon", en:"Meyer Lemon"}, {it:"Minneola Tangelo", en:"Minneola Tangelo"}, {it:"Moro Orange", en:"Moro Orange"}, {it:"Musang King", en:"Musang King"},
-    {it:"Nance", en:"Nance"}, {it:"Naranjilla", en:"Naranjilla"}, {it:"Nashi", en:"Nashi Pear"}, {it:"Native Currant", en:"Native Currant"}, {it:"Nectarine", en:"Nectarine"}, {it:"Neem", en:"Neem"}, {it:"Nespola del Giappone", en:"Loquat"}, {it:"Nespola Comune", en:"Medlar"}, {it:"Noni", en:"Noni"}, {it:"Nutmeg (Fruit)", en:"Nutmeg Fruit"}, {it:"Northern Spy Apple", en:"Northern Spy Apple"}, {it:"Navel Orange", en:"Navel Orange"}, {it:"Ogeechee Lime", en:"Ogeechee Lime"}, {it:"Oil Palm", en:"Oil Palm"}, {it:"Olallieberry", en:"Olallieberry"}, {it:"Olive", en:"Olive"}, {it:"Orange", en:"Orange"}, {it:"Orangelo", en:"Orangelo"}, {it:"Oregon Grape", en:"Oregon Grape"}, {it:"Oroblanco", en:"Oroblanco"}, {it:"Opal Apple", en:"Opal Apple"}, {it:"Palmyra Fruit", en:"Palmyra Fruit"}, {it:"Papaya Formosa", en:"Formosa Papaya"}, {it:"Papaya Solo", en:"Solo Papaya"}, {it:"Passion Fruit", en:"Passion Fruit"}, {it:"Pawpaw", en:"Pawpaw"}, {it:"Peach", en:"Peach"}, {it:"Peach Palm", en:"Peach Palm"}, {it:"Pear", en:"Pear"}, {it:"Pecan", en:"Pecan"}, {it:"Pepino", en:"Pepino"}, {it:"Persimmon", en:"Persimmon"}, {it:"Piatone", en:"Piatone"}, {it:"Pigeon Plum", en:"Pigeon Plum"}, {it:"Pili Nut", en:"Pili Nut"}, {it:"Pineberry", en:"Pineberry"}, {it:"Pineapple", en:"Pineapple"}, {it:"Pitahaya", en:"Dragon Fruit"}, {it:"Pitomba", en:"Pitomba"}, {it:"Platano", en:"Plantain"}, {it:"Plum", en:"Plum"}, {it:"Pompelmo", en:"Grapefruit"}, {it:"Pomegranate", en:"Pomegranate"}, {it:"Pomelo", en:"Pomelo"}, {it:"Prugna", en:"Plum"}, {it:"Pulasan", en:"Pulasan"}, {it:"Pummelo", en:"Pomelo"}, {it:"Packham’s Triumph", en:"Packham’s Triumph"}, {it:"Passacrassana", en:"Passacrassana"}, {it:"Percoca", en:"Percoca"}, {it:"Pesca Saturnia", en:"Saturn Peach"}, {it:"Pesca Tabacchiera", en:"Saturn Peach"}, {it:"Pesca Gialla", en:"Yellow Peach"}, {it:"Pesca Bianca", en:"White Peach"}, {it:"Pizzutella Grape", en:"Pizzutella Grape"}, {it:"Pink Lady Apple", en:"Pink Lady Apple"}, {it:"Pinkerton Avocado", en:"Pinkerton Avocado"}, {it:"Ponkan Mandarin", en:"Ponkan Mandarin"}, {it:"Prugnolo", en:"Sloe"}, {it:"Prugna Damaschina", en:"Damson Plum"}, {it:"Prugna della California", en:"California Plum"},
-    {it:"Quandong", en:"Quandong"}, {it:"Quince", en:"Quince"}, {it:"Rambai", en:"Rambai"}, {it:"Rambutan", en:"Rambutan"}, {it:"Rangpur", en:"Rangpur"}, {it:"Raspberry", en:"Raspberry"}, {it:"Red Currant", en:"Red Currant"}, {it:"Riberry", en:"Riberry"}, {it:"Ribes Rosso", en:"Redcurrant"}, {it:"Ribes Bianco", en:"White Currant"}, {it:"Ribes Nero", en:"Blackcurrant"}, {it:"Rollinia", en:"Rollinia"}, {it:"Rose Apple", en:"Rose Apple"}, {it:"Rose Hip", en:"Rose Hip"}, {it:"Rowan", en:"Rowan"}, {it:"Royal Gala", en:"Royal Gala"}, {it:"Red Delicious", en:"Red Delicious"}, {it:"Red Bartlett", en:"Red Bartlett"}, {it:"Regina Cherry", en:"Regina Cherry"}, {it:"Regina Claudia Plum", en:"Greengage"}, {it:"Salak", en:"Snake Fruit"}, {it:"Salal", en:"Salal"}, {it:"Salmonberry", en:"Salmonberry"}, {it:"Santol", en:"Santol"}, {it:"Sapodilla", en:"Sapodilla"}, {it:"Sapote Nero", en:"Black Sapote"}, {it:"Sapote Bianco", en:"White Sapote"}, {it:"Sea Buckthorn", en:"Sea Buckthorn"}, {it:"Sea Grape", en:"Sea Grape"}, {it:"Serviceberry", en:"Serviceberry"}, {it:"Sloe", en:"Sloe"}, {it:"Soursop", en:"Soursop"}, {it:"Star Apple", en:"Star Apple"}, {it:"Starfruit", en:"Starfruit"}, {it:"Strawberry", en:"Strawberry"}, {it:"Sugar Apple", en:"Sugar Apple"}, {it:"Surinam Cherry", en:"Surinam Cherry"}, {it:"Satsuma", en:"Satsuma"}, {it:"Sanguinello Orange", en:"Sanguinello Orange"}, {it:"Santa Maria Pear", en:"Santa Maria Pear"}, {it:"Sharlyn Melon", en:"Sharlyn Melon"}, {it:"Snow Queen Nectarine", en:"Snow Queen Nectarine"}, {it:"Stanley Plum", en:"Stanley Plum"}, {it:"Sudachi", en:"Sudachi"}, {it:"Tamarillo", en:"Tamarillo"}, {it:"Tamarindo", en:"Tamarind"}, {it:"Tangelo", en:"Tangelo"}, {it:"Tangerine", en:"Tangerine"}, {it:"Tayberry", en:"Tayberry"}, {it:"Thimbleberry", en:"Thimbleberry"}, {it:"Thompson Seedless", en:"Thompson Seedless"}, {it:"Ugli Fruit", en:"Ugli Fruit"}, {it:"Ugni", en:"Ugni"}, {it:"Uva Italia", en:"Italia Grape"}, {it:"Uva Sultanina", en:"Sultana Grape"}, {it:"Uva Fragola", en:"Strawberry Grape"}, {it:"Uva Spina Verde", en:"Green Gooseberry"}, {it:"Uva Spina Rossa", en:"Red Gooseberry"}, {it:"Valencia Orange", en:"Valencia Orange"}, {it:"Velvet Apple", en:"Velvet Apple"}, {it:"Vittoria Grape", en:"Vittoria Grape"}, {it:"Wampee", en:"Wampee"}, {it:"Water Apple", en:"Water Apple"}, {it:"White Sapote", en:"White Sapote"}, {it:"Wolfberry", en:"Goji Berry"}, {it:"Wood Apple", en:"Wood Apple"}, {it:"Ximenia", en:"Ximenia"}, {it:"Yangmei", en:"Yangmei"}, {it:"Youngberry", en:"Youngberry"}, {it:"Yuzu", en:"Yuzu"}, {it:"Ziziphus", en:"Jujube"}, {it:"Zucchini (Botanical Fruit)", en:"Zucchini"}
+const allFruits = ["Mela", "Pera", "Banana", "Arancia", "Fragola", "Uva", "Kiwi", "Ananas", "Mango", "Papaya", "Anguria", "Melone", "Pesca", "Albicocca", "Ciliegia", "Susina", "Fico", "Melograno", "Cachi", "Litchi", "Dragon Fruit", "Durian", "Rambutan", "Mangostano", "Passion Fruit", "Guava", "Avocado", "Lime", "Limone", "Pompelmo", "Mandarino", "Clementina", "Lampone", "Mirtillo", "Mora", "Ribes", "Uva Spina", "Nespola", "Giuggiola", "Carruba", "Dattero", "Kumquat", "Chinotto", "Bergamotto", "Pomelo", "Jackfruit", "Starfruit", "Cherimoya", "Salak", "Longan", "Loquat", "Jabuticaba", "Cupuaçu", "Açaí", "Goji", "Physalis", "Tamarindo", "Platano", "Noci di Cocco", "Castagna", "Noce", "Nocciola", "Mandorla", "Pistacchio", "Anacardio", "Macadamia", "Pecan", "Brasile", "Pinolo"];
+
+const groups = [
+    { n: "Gusto", c: "var(--c-gusto)", p: ["Brix (Dolce)", "Acidità", "Intensità", "Amarezza", "Aftertaste", "Astringenza", "Tropicalità", "Mente Pulita", "Soddisfazione"] },
+    { n: "Meccanica", c: "var(--c-meccanica)", p: ["Crunchiness", "Crispyness", "Carnosità", "Succosità", "Cremosità", "Viscidità", "Secchezza", "Farinosità", "Gag Index", "Sound Design", "Fibrosità"] },
+    { n: "Psiche & Bio", c: "var(--c-psiche)", p: ["Costanza", "Sfumature", "Inganno", "Finestra Godibilità", "Sex Appeal", "Nutrizione", "Sazietà"] },
+    { n: "Logistica", c: "var(--c-logistica)", p: ["Sbucciabilità", "Portabilità", "Seme Experience", "Impegno Mentale", "Anatomia Scarto", "Versatilità", "Buccia", "Resa (Spreco)"] }
 ];
 
-// --- 35 PARAMETRI SUV-F ---
-const SUV_PARAMS = [
-    { cat: "Gusto", color: "var(--c-gusto)", fields: ["Brix", "Acidità", "Intensità", "Amarezza", "Aftertaste", "Astringenza", "Tropicalità", "Mente Pulita", "Soddisfazione"] },
-    { cat: "Meccanica", color: "var(--c-meccanica)", fields: ["Crunchiness", "Crispyness", "Carnosità", "Succosità", "Cremosità", "Viscidità", "Secchezza", "Farinosità", "Gag Index", "Sound Design", "Fibrosità"] },
-    { cat: "Psiche & Bio", color: "var(--c-psiche)", fields: ["Costanza", "Sfumature", "Inganno", "Finestra Godibilità", "Sex Appeal", "Nutrizione", "Sazietà"] },
-    { cat: "Logistica", color: "var(--c-logistica)", fields: ["Sbucciabilità", "Portabilità", "Seme Experience", "Impegno Mentale", "Anatomia Scarto", "Versatilità", "Buccia", "Resa (Spreco)"] }
-];
+window.onload = () => {
+    const dl = document.getElementById('fruits');
+    allFruits.sort().forEach(f => dl.innerHTML += `<option value="${f}">`);
+    const saved = localStorage.getItem('suvUser');
+    if(saved) { user = saved; start(); }
+};
 
-// --- LOGICA DI LOGIN ---
 function login() {
-    user = document.getElementById('user-id').value.trim().replace(/[^a-zA-Z0-9]/g, '_');
+    user = document.getElementById('username').value.trim();
     if(!user) return;
-    document.getElementById('scr-auth').classList.remove('active');
-    document.getElementById('scr-vota').classList.add('active');
-    document.getElementById('ui-header').style.display = 'flex';
-    document.getElementById('ui-nav').style.display = 'flex';
-    document.getElementById('ui-score').style.display = 'flex';
-    initApp();
+    if(document.getElementById('rememberMe').checked) localStorage.setItem('suvUser', user);
+    start();
 }
 
-// --- INIZIALIZZAZIONE ---
-function initApp() {
-    const lang = document.getElementById('lang').value;
-    const dl = document.getElementById('list-frutti');
-    dl.innerHTML = DATABASE.map(f => `<option value="${f[lang]}">`).join('');
-    renderEngine();
+function start() {
+    document.getElementById('loginScreen').classList.remove('active');
+    document.getElementById('ratingScreen').classList.add('active');
+    document.getElementById('mainNav').style.display = 'flex';
+    document.getElementById('userDisplay').innerText = `ID: ${user.toUpperCase()}`;
+    renderParams();
 }
 
-function renderEngine() {
-    const cont = document.getElementById('params-engine');
-    cont.innerHTML = "";
+function renderParams() {
+    const container = document.getElementById('dynamicParams');
+    container.innerHTML = "";
     let idx = 0;
-
-    SUV_PARAMS.forEach(g => {
-        cont.innerHTML += `<div class="cat-tag" style="background:${g.color}">${g.cat}</div>`;
-        let grid = `<div class="grid">`;
-        g.fields.forEach(f => {
-            grid += `
-                <div class="card" id="card-${idx}" style="border-left-color:${g.color}">
-                    <div class="m-toggle" id="m-btn-${idx}" onclick="toggleMalos(${idx})">MALOS</div>
-                    <div style="font-weight:900; font-size:0.9rem">${f}</div>
-                    <div class="s-wrap">
-                        <div class="s-label">Valore <span id="v-txt-${idx}">50</span></div>
-                        <input type="range" id="v-val-${idx}" min="0" max="100" value="50" oninput="calc()">
-                    </div>
-                    <div class="s-wrap">
-                        <div class="s-label">Peso <span id="w-txt-${idx}">50%</span></div>
-                        <input type="range" id="w-val-${idx}" min="0" max="100" value="50" oninput="calc()">
-                    </div>
+    groups.forEach(g => {
+        container.innerHTML += `<div class="group-header" style="background:${g.c}">${g.n}</div>`;
+        const grid = document.createElement('div'); grid.className="grid";
+        g.p.forEach(p => {
+            grid.innerHTML += `
+                <div class="param-card" id="card_${idx}" style="border-left-color:${g.c}">
+                    <button class="malos-btn" onclick="toggleMalos(${idx}, this)">MALOS</button>
+                    <strong>${p}</strong>
+                    <div class="slider-label">Valore <span id="v_t_${idx}">50</span></div>
+                    <input type="range" id="v_${idx}" value="50" oninput="updateScore()">
+                    <div class="slider-label">Peso <span id="w_t_${idx}">50%</span></div>
+                    <input type="range" id="w_${idx}" value="50" oninput="updateScore()">
                 </div>`;
             idx++;
         });
-        grid += `</div>`;
-        cont.innerHTML += grid;
+        container.appendChild(grid);
     });
-    calc();
+    updateScore();
 }
 
-function toggleMalos(i) {
-    malos[i] = !malos[i];
-    document.getElementById(`m-btn-${i}`).classList.toggle('active');
-    document.getElementById(`card-${i}`).classList.toggle('malos-mode');
-    calc();
+function toggleMalos(idx, btn) {
+    malosState[idx] = !malosState[idx];
+    btn.classList.toggle('malos-active');
+    document.getElementById(`card_${idx}`).classList.toggle('malos-mode');
+    updateScore();
 }
 
-function validateFruit() {
-    const val = document.getElementById('f-search').value;
-    const lang = document.getElementById('lang').value;
-    const found = DATABASE.find(f => f[lang].toLowerCase() === val.toLowerCase());
-    const btn = document.getElementById('btn-save');
-    const input = document.getElementById('f-search');
-    const msg = document.getElementById('v-msg');
-
-    if(found) {
-        btn.disabled = false;
-        input.className = "search-input valid";
-        msg.innerText = "Frutto Verificato ✅";
-        msg.style.color = "#4caf50";
-    } else {
-        btn.disabled = true;
-        input.className = "search-input invalid";
-        msg.innerText = "Frutto non in elenco ❌";
-        msg.style.color = "#f44336";
-    }
-}
-
-function calc() {
+function updateScore() {
     let total = 0;
     for(let i=0; i<35; i++) {
-        const v = parseInt(document.getElementById(`v-val-${i}`).value);
-        const w = parseInt(document.getElementById(`w-val-${i}`).value);
-        document.getElementById(`v-txt-${i}`).innerText = v;
-        document.getElementById(`w-txt-${i}`).innerText = w + "%";
-        
+        const vEl = document.getElementById(`v_${i}`);
+        if(!vEl) continue;
+        let v = parseInt(vEl.value);
+        let w = parseInt(document.getElementById(`w_${i}`).value);
+        document.getElementById(`v_t_${i}`).innerText = v;
+        document.getElementById(`w_t_${i}`).innerText = w + "%";
         let res = v * (w/100);
-        if(malos[i]) res *= -1;
-        total += res;
+        total += malosState[i] ? (res * -1) : res;
     }
-    document.getElementById('total-val').innerText = Math.round(total);
+    document.getElementById('finalScore').innerText = Math.round(total);
 }
 
-function showScr(id, el) {
+function showTab(id, el) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(`scr-${id}`).classList.add('active');
-    el.classList.add('active');
-    if(id === 'radar') drawRadar();
-    if(id === 'rank') loadRank();
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
+    document.getElementById(id).classList.add('active');
+    el.classList.add('active-nav');
+    if(id === 'chartScreen') drawChart();
+    if(id === 'rankScreen') { loadMyRanking(); loadGlobalRanking(); }
 }
 
-function drawRadar() {
-    const ctx = document.getElementById('mainRadar').getContext('2d');
-    const labs = []; const vals = [];
-    SUV_PARAMS.forEach(g => g.fields.forEach(f => labs.push(f)));
-    for(let i=0; i<35; i++) vals.push(document.getElementById(`v-val-${i}`).value);
-
-    if(chart) chart.destroy();
-    chart = new Chart(ctx, {
+function drawChart() {
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    const labels = []; const vals = []; let idx = 0;
+    groups.forEach(g => g.p.forEach(p => { labels.push(p); vals.push(document.getElementById(`v_${idx}`).value); idx++; }));
+    if(radarChart) radarChart.destroy();
+    radarChart = new Chart(ctx, {
         type: 'radar',
-        data: {
-            labels: labs,
-            datasets: [{
-                data: vals,
-                borderColor: '#f06292',
-                backgroundColor: 'rgba(240, 98, 146, 0.2)',
-                borderWidth: 3,
-                pointRadius: 2
-            }]
-        },
-        options: {
-            scales: { r: { min: 0, max: 100, ticks: { display: false } } },
-            plugins: { legend: { display: false } }
-        }
+        data: { labels: labels, datasets: [{ data: vals, backgroundColor: 'rgba(240, 98, 146, 0.1)', borderColor: '#f06292', borderWidth: 2 }] },
+        options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100, ticks: { display: false }, pointLabels: { font: { size: 7, weight: 'bold' } } } }, plugins: { legend: { display: false } } }
     });
 }
 
-function saveAnalysis() {
-    const lang = document.getElementById('lang').value;
-    const fName = document.getElementById('f-search').value;
-    const score = parseInt(document.getElementById('total-val').innerText);
-    const fruitKey = DATABASE.find(f => f[lang].toLowerCase() === fName.toLowerCase()).it;
-
-    db.ref(`u/${user}/${fruitKey}`).set({ score: score, date: Date.now() });
-    alert("Analisi Inviata al Database!");
+function saveData() {
+    const f = document.getElementById('fruitInput').value.trim() || "Ignoto";
+    const s = document.getElementById('finalScore').innerText;
+    const data = { score: parseInt(s), date: new Date().toLocaleDateString() };
+    // Salvataggio dei parametri per la media globale
+    for(let i=0; i<35; i++) {
+        data[`v${i}`] = document.getElementById(`v_${i}`).value;
+        data[`w${i}`] = document.getElementById(`w_${i}`).value;
+        if(malosState[i]) data[`m${i}`] = true;
+    }
+    db.ref(`u/${user}/${f}`).set(data);
+    alert("Archiviato nel Cloud Globale! 🌎");
 }
 
-function loadRank() {
-    // Personale
+function loadMyRanking() {
     db.ref(`u/${user}`).once('value', s => {
         const d = s.val() || {};
-        document.getElementById('list-user').innerHTML = Object.entries(d).map(e => `
-            <div class="rank-row"><span>${e[0]}</span><span class="rank-val">${e[1].score}</span></div>
-        `).join('');
+        document.getElementById('myList').innerHTML = Object.entries(d)
+            .sort((a,b) => b[1].score - a[1].score)
+            .map(e => `<div class="rank-item"><b>${e[0]}</b> <span class="rank-score">${e[1].score}</span></div>`).join('');
     });
-    // Globale
+}
+
+function loadGlobalRanking() {
     db.ref(`u`).once('value', s => {
-        const all = s.val() || {};
-        let agg = {};
-        Object.values(all).forEach(uData => {
-            Object.entries(uData).forEach(([f, v]) => {
-                if(!agg[f]) agg[f] = { s:0, c:0 };
-                agg[f].s += v.score; agg[f].c++;
+        const users = s.val() || {};
+        const globalData = {};
+        Object.values(users).forEach(userFruits => {
+            Object.entries(userFruits).forEach(([name, data]) => {
+                if(!globalData[name]) globalData[name] = { total: 0, count: 0 };
+                globalData[name].total += data.score;
+                globalData[name].count += 1;
             });
         });
-        const sorted = Object.entries(agg).map(([f, st]) => ({ n:f, a:Math.round(st.s/st.c) })).sort((a,b) => b.a - a.a);
-        document.getElementById('list-global').innerHTML = sorted.map(e => `
-            <div class="rank-row"><span>${e.n}</span><span class="rank-val">${e.a}</span></div>
-        `).join('');
+        const sorted = Object.entries(globalData)
+            .map(([name, obj]) => ({ name, avg: Math.round(obj.total / obj.count) }))
+            .sort((a,b) => b.avg - a.avg);
+
+        document.getElementById('globalList').innerHTML = sorted
+            .map(e => `<div class="rank-item"><b>${e.name}</b> <span class="rank-score" style="background:#b2e2f2; color:#000;">${e.avg} AVG</span></div>`).join('');
     });
 }
 </script>

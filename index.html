@@ -3,57 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUV-F | Pink Edition Pro</title>
+    <title>SUV-F | Pink Rating System</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
-            --bg: #fff5f7;
-            --card-bg: #ffffff;
-            --accent: #ff7eb9; /* Rosa Principale */
-            --accent-dark: #e84393;
-            --secondary: #fd96c4;
-            --text: #4a1c30;
-            --malos: #ff4757;
-            --gray: #fce4ec;
+            --bg: #fff5f8;
+            --accent: #ff85b2; 
+            --accent-dark: #f06292;
+            --text: #5d4037;
+            --gray: #f8bbd0;
+            --malos: #ff5252;
         }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding-bottom: 90px; color: var(--text); }
         
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding-bottom: 90px; color: var(--text); }
-        
-        /* Navbar */
-        .navbar { background: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--gray); }
-        .lang-select { background: var(--gray); color: var(--accent-dark); border: none; padding: 8px; border-radius: 10px; font-weight: bold; }
+        .navbar { background: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(255,133,178,0.2); }
+        .lang-select { background: var(--gray); color: white; border: none; padding: 6px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
         .screen { display: none; padding: 20px; max-width: 1200px; margin: auto; animation: fadeIn 0.3s ease; }
         .active { display: block; }
 
-        /* Login Pink */
-        .card-auth { background: white; padding: 40px; border-radius: 40px; text-align: center; box-shadow: 0 10px 30px rgba(255, 126, 185, 0.2); max-width: 400px; margin: 60px auto; border: 1px solid var(--gray); }
-        
-        /* Parametri */
-        .group-header { padding: 12px; border-radius: 15px; color: white; margin-top: 30px; font-weight: bold; text-transform: uppercase; font-size: 0.8em; background: var(--accent); letter-spacing: 1px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; margin-top: 15px; }
-        .param-card { background: white; padding: 20px; border-radius: 25px; border-bottom: 5px solid var(--gray); position: relative; transition: 0.3s; }
-        .param-card.malos-mode { background: #fff0f0; border-bottom-color: var(--malos); }
+        /* Login & Instructions */
+        .card-auth { background: white; padding: 30px; border-radius: 35px; text-align: center; box-shadow: 0 15px 35px rgba(255,133,178,0.15); max-width: 500px; margin: 40px auto; border: 1px solid var(--gray); }
+        .instruction-box { text-align: left; background: var(--bg); padding: 20px; border-radius: 20px; margin: 20px 0; font-size: 0.85em; line-height: 1.5; border: 1px dashed var(--accent); }
+        .step { margin-bottom: 10px; display: flex; align-items: flex-start; }
+        .step-num { background: var(--accent); color: white; min-width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-weight: bold; font-size: 0.7em; margin-top: 2px; }
 
-        .malos-btn { font-size: 0.65em; padding: 6px 15px; border-radius: 20px; border: 1px solid var(--gray); cursor: pointer; float: right; font-weight: bold; background: white; color: #999; }
+        /* Parametri */
+        .group-header { padding: 14px; border-radius: 15px; color: white; margin-top: 30px; font-weight: bold; text-transform: uppercase; font-size: 0.85em; background: var(--accent); letter-spacing: 1px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; margin-top: 15px; }
+        .param-card { background: white; padding: 22px; border-radius: 25px; border-left: 8px solid var(--gray); transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+        .param-card.malos-mode { border-left-color: var(--malos) !important; background: #fff8f8; }
+        
+        .malos-btn { font-size: 0.65em; padding: 5px 12px; border-radius: 10px; border: 1px solid var(--gray); cursor: pointer; float: right; font-weight: bold; color: #999; background: white; }
         .malos-active { background: var(--malos); color: white; border-color: var(--malos); }
 
-        /* Sliders Pink */
+        /* Sliders */
         .slider-label { font-size: 0.75em; font-weight: bold; color: var(--accent-dark); display: flex; justify-content: space-between; margin-top: 10px; }
-        input[type=range] { width: 100%; margin: 10px 0; accent-color: var(--accent); }
-        
-        /* Logic Section */
-        .logic-card { background: white; border-radius: 25px; padding: 20px; margin-bottom: 20px; border-left: 10px solid var(--accent); }
-        .example-box { background: var(--bg); padding: 15px; border-radius: 15px; margin-top: 10px; font-family: monospace; font-size: 0.9em; }
+        input[type=range] { width: 100%; margin: 8px 0; accent-color: var(--accent); cursor: pointer; }
 
-        /* Score Box */
-        .score-box { background: var(--accent); color: white; padding: 40px; border-radius: 40px; text-align: center; margin-top: 40px; box-shadow: 0 15px 30px rgba(255, 126, 185, 0.4); }
-
-        /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 15px 0; border-top: 2px solid var(--gray); }
-        .nav-item { color: #d1d1d1; cursor: pointer; font-size: 0.7em; font-weight: 900; text-transform: uppercase; }
+        /* Score & Nav */
+        .score-box { margin-top:40px; background:var(--accent-dark); color:white; padding:45px; border-radius:40px; text-align:center; box-shadow: 0 15px 30px rgba(240,98,146,0.3); }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 18px 0; z-index: 1000; border-top: 1px solid var(--gray); }
+        .nav-item { color: #d1d1d1; cursor: pointer; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
         .nav-item.active-nav { color: var(--accent-dark); }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
@@ -62,82 +55,84 @@
 <body>
 
 <div class="navbar">
-    <div style="font-weight: 900; color: var(--accent-dark); font-size: 1.2em;">SUV-F <span style="font-weight: 300;">🌸</span></div>
     <select id="langSelect" class="lang-select" onchange="changeLang(this.value)">
-        <option value="it">IT</option>
-        <option value="en">EN</option>
+        <option value="it">🇮🇹 IT</option>
+        <option value="en">🇬🇧 EN</option>
+        <option value="es">🇪🇸 ES</option>
+        <option value="fr">🇫🇷 FR</option>
     </select>
+    <div id="userDisplay" style="font-weight: 900; color: var(--accent-dark);"></div>
 </div>
 
-<!-- LOGIN -->
 <div id="loginScreen" class="screen active">
     <div class="card-auth">
-        <h2 style="color:var(--accent-dark);">Welcome, Diva.</h2>
-        <p id="txt_welcome" style="font-size:0.85em; color:#888; margin-bottom:25px;"></p>
-        <input type="text" id="username" placeholder="Nome Analista" style="width:80%; padding:15px; border-radius:20px; border:2px solid var(--gray); margin-bottom:15px; outline:none;">
-        <button onclick="login()" id="btn_login" style="width:88%; background:var(--accent); color:white; padding:15px; border:none; border-radius:20px; font-weight:bold; cursor:pointer;"></button>
+        <h1 style="color:var(--accent-dark); margin:0;">SUV-F <small style="font-size:0.4em;">PINK</small></h1>
+        
+        <div class="instruction-box">
+            <b id="txt_instr_title" style="display:block; margin-bottom:10px; color:var(--accent-dark);">GUIDA AL RATING:</b>
+            <div class="step"><div class="step-num">1</div><span id="step1">Scegli il frutto e scrivi il nome.</span></div>
+            <div class="step"><div class="step-num">2</div><span id="step2">Usa il <b>Valore</b> per l'intensità (0-100).</span></div>
+            <div class="step"><div class="step-num">3</div><span id="step3">Usa l'<b>Importanza</b> per dare "potere" al voto.</span></div>
+            <div class="step"><div class="step-num">4</div><span id="step4">Attiva <b>MALOS</b> se il parametro è un difetto.</span></div>
+            <div class="step"><div class="step-num">5</div><span id="step5">Controlla il Grafico Radar per il profilo bio-meccanico.</span></div>
+        </div>
+
+        <input type="text" id="username" placeholder="Nome Analista" style="width:85%; padding:15px; margin-bottom:15px; border-radius:15px; border:2px solid var(--gray); outline:none;">
+        <div style="margin-bottom:20px;">
+            <label style="font-size:0.85em; color:#888; cursor:pointer;"><input type="checkbox" id="rememberMe"> <span id="txt_remember"></span></label>
+        </div>
+        <button onclick="login()" id="btn_login" style="width:90%; background:var(--accent); color:white; padding:16px; border:none; border-radius:15px; font-weight:bold; cursor:pointer;"></button>
     </div>
 </div>
 
-<!-- RATING -->
 <div id="ratingScreen" class="screen">
-    <input type="text" id="fruitSearch" style="width:100%; padding:20px; border-radius:30px; border:none; background:white; box-shadow:0 10px 20px rgba(0,0,0,0.05); font-size:1em; margin-bottom:20px; box-sizing:border-box;" placeholder="Nome del frutto...">
+    <input type="text" id="fruitSearch" style="width:100%; padding:20px; border-radius:25px; border:none; box-shadow:0 8px 25px rgba(255,133,178,0.1); font-size:1.1em; margin-bottom:25px; box-sizing:border-box; outline:none;" placeholder="...">
     
     <div id="dynamicParams"></div>
 
     <div class="score-box">
-        <div style="opacity:0.8; font-size:0.9em; letter-spacing:2px;">TOTAL INDEX</div>
-        <div id="finalScore" style="font-size:6em; font-weight:900;">0</div>
-        <button onclick="saveData()" id="btn_save" style="background:white; color:var(--accent-dark); border:none; padding:15px 40px; border-radius:20px; font-weight:900; cursor:pointer; margin-top:15px;"></button>
+        <h3 id="txt_totalScore" style="margin:0; opacity:0.8; font-size:0.9em; letter-spacing:1px;">SUV-F INDEX</h3>
+        <div id="finalScore" style="font-size:5.5em; font-weight:900; line-height:1; margin:10px 0;">0</div>
+        <button onclick="saveData()" id="btn_save" style="background:white; color:var(--accent-dark); border:none; padding:18px 50px; border-radius:15px; font-weight:bold; cursor:pointer; font-size:1em; margin-top:15px;"></button>
     </div>
 </div>
 
-<!-- LOGICA DI CALCOLO -->
 <div id="logicScreen" class="screen">
-    <h2 style="color:var(--accent-dark);">🌸 Modalità di Calcolo</h2>
-    <p>Il sistema SUV-F non somma semplicemente i voti, ma calcola il <strong>Peso Specifico</strong> di ogni sensazione.</p>
-    
-    <div class="logic-card">
-        <strong>1. Il Valore (Cosa senti)</strong>
-        <p>Da 0 a 100. Rappresenta l'intensità del parametro nel frutto.</p>
+    <h2 style="color:var(--accent-dark);">🌸 Come funziona il punteggio?</h2>
+    <div class="logic-card" style="background:white; padding:20px; border-radius:20px; margin-bottom:15px; border-left:10px solid var(--accent);">
+        <strong>1. Valore (Intensità)</strong>
+        <p>Indica quanto quel parametro è presente nel frutto (es. "Molto dolce" = 90).</p>
     </div>
-
-    <div class="logic-card">
-        <strong>2. L'Importanza (Quanto conta)</strong>
-        <p>Questo slider determina il "potere" del parametro sul voto finale. Se l'importanza è 0%, il parametro è ignorato.</p>
+    <div class="logic-card" style="background:white; padding:20px; border-radius:20px; margin-bottom:15px; border-left:10px solid var(--accent);">
+        <strong>2. Importanza (Peso / Potere)</strong>
+        <p>Indica quanto quel parametro deve influire sul voto finale. Se l'importanza è 0%, il parametro non sposta il punteggio.</p>
     </div>
-
-    <div class="logic-card">
-        <strong>Esempio Grafico:</strong>
-        <div class="example-box">
-            <b>Frutto: LIMONE</b><br>
-            - Dolcezza: 10 (Valore) x 5% (Importanza) = 0.5 pt<br>
-            - Acidità: 95 (Valore) x 100% (Importanza) = 95 pt<br>
-            <br>
-            <i>Risultato: L'acidità domina il punteggio perché ha più "potere".</i>
-        </div>
-    </div>
-
-    <div class="logic-card" style="border-left-color: var(--malos);">
+    <div class="logic-card" style="background:white; padding:20px; border-radius:20px; border-left:10px solid var(--malos);">
         <strong>3. Modalità MALOS</strong>
-        <p>Se attivata, il calcolo (Valore x Peso) viene <strong>sottratto</strong> dal totale. Si usa per difetti come "Farinosità" o "Seme Experience" negativa.</p>
+        <p>Sottrae il punteggio invece di aggiungerlo. Si usa per i difetti.</p>
     </div>
 </div>
 
-<!-- RANKING -->
+<div id="chartScreen" class="screen">
+    <div style="background:white; border-radius:30px; padding:25px; height:70vh; box-shadow:0 10px 30px rgba(0,0,0,0.05);">
+        <canvas id="radarChart"></canvas>
+    </div>
+</div>
+
 <div id="rankScreen" class="screen">
     <h2 id="txt_myRank"></h2>
     <div id="myList"></div>
 </div>
 
 <div id="mainNav" class="bottom-nav" style="display:none;">
-    <div class="nav-item active-nav" onclick="showTab('ratingScreen', this)">Vota</div>
-    <div class="nav-item" onclick="showTab('logicScreen', this)">Logica</div>
-    <div class="nav-item" onclick="showTab('rankScreen', this)">Classifica</div>
+    <div class="nav-item active-nav" onclick="showTab('ratingScreen', this)" id="nav_vota"></div>
+    <div class="nav-item" onclick="showTab('logicScreen', this)">LOGICA</div>
+    <div class="nav-item" onclick="showTab('chartScreen', this)" id="nav_grafico"></div>
+    <div class="nav-item" onclick="showTab('rankScreen', this)" id="nav_rank"></div>
 </div>
 
 <script>
-// --- CONFIGURAZIONE FIREBASE ---
+// CONFIG FIREBASE
 const firebaseConfig = {
     apiKey: "AIzaSyASl7UbctX-4weq8w94ZUxCrOIhl3jjqME",
     authDomain: "suv-f-18d65.firebaseapp.com",
@@ -151,42 +146,98 @@ const db = firebase.database();
 
 let lang = "it";
 let user = "";
-let malos = {};
+let malosState = {};
+let radarChart = null;
 
 const translations = {
     it: {
-        welcome: "Analisi sensoriale pesata con estetica Pink.",
-        loginBtn: "INIZIA TEST", saveBtn: "SALVA NEL CLOUD",
-        myRank: "I tuoi frutti migliori"
+        instr_title: "GUIDA AL RATING:",
+        step1: "Scegli il frutto e scrivi il nome.",
+        step2: "Usa il Valore per l'intensità (0-100).",
+        step3: "Usa l'Importanza per dare potere al voto.",
+        step4: "Attiva MALOS se il parametro è un difetto.",
+        step5: "Controlla il Grafico Radar per il profilo.",
+        remember: "Resta connesso", loginBtn: "INIZIA ANALISI", totalScore: "SUV-F INDEX", saveBtn: "SALVA ANALISI",
+        search: "Quale frutto stai analizzando?", navVota: "VOTA", navGrafico: "GRAFICO", navRank: "RANK",
+        myRank: "Le tue recensioni", val: "Valore", imp: "Potere (Peso)"
     },
     en: {
-        welcome: "Weighted sensory analysis with Pink aesthetic.",
-        loginBtn: "START TEST", saveBtn: "SAVE TO CLOUD",
-        myRank: "Your top fruits"
+        instr_title: "RATING GUIDE:",
+        step1: "Choose the fruit and type its name.",
+        step2: "Use Value for intensity (0-100).",
+        step3: "Use Importance to give power to the score.",
+        step4: "Activate MALOS if the parameter is a defect.",
+        step5: "Check the Radar Chart for the profile.",
+        remember: "Keep me logged in", loginBtn: "START ANALYSIS", totalScore: "SUV-F INDEX", saveBtn: "SAVE ANALYSIS",
+        search: "What fruit are you testing?", navVota: "RATE", navGrafico: "CHART", navRank: "RANK",
+        myRank: "Your reviews", val: "Value", imp: "Power (Weight)"
     }
 };
 
 const groups = [
-    { n: "Gusto", c:"var(--accent)", p:[{it:"Brix", en:"Brix"}, {it:"Acidità", en:"Acidity"}, {it:"Intensità", en:"Intensity"}]},
-    { n: "Meccanica", c:"var(--secondary)", p:[{it:"Crunch", en:"Crunch"}, {it:"Succo", en:"Juice"}, {it:"Fibrosità", en:"Fiber"}]},
-    { n: "Logistica", c:"var(--accent-dark)", p:[{it:"Sbucciabilità", en:"Peel"}, {it:"Semi", en:"Seeds"}]}
-]; // Semplificati per brevità, puoi riaggiungere tutti i 35
+    { n: {it:"Gusto", en:"Taste"}, c:"#ff85b2", p:[
+        {it:"Brix (Dolce)", en:"Brix"}, {it:"Acidità", en:"Acidity"}, {it:"Intensità", en:"Intensity"},
+        {it:"Amarezza", en:"Bitterness"}, {it:"Aftertaste", en:"Aftertaste"}, {it:"Astringenza", en:"Astringency"},
+        {it:"Tropicalità", en:"Tropicality"}, {it:"Mente Pulita", en:"Cleansing"}, {it:"Soddisfazione", en:"Satisfaction"}
+    ]},
+    { n: {it:"Meccanica", en:"Mechanics"}, c:"#f06292", p:[
+        {it:"Crunchiness", en:"Crunchiness"}, {it:"Crispyness", en:"Crispyness"}, {it:"Carnosità", en:"Fleshiness"},
+        {it:"Succosità", en:"Juiciness"}, {it:"Cremosità", en:"Creaminess"}, {it:"Viscidità", en:"Sliminess"},
+        {it:"Secchezza", en:"Dryness"}, {it:"Farinosità", en:"Mealiness"}, {it:"Gag Index", en:"Gag Index"},
+        {it:"Sound Design", en:"Sound"}, {it:"Fibrosità", en:"Fibrosity"}
+    ]},
+    { n: {it:"Psiche & Bio", en:"Psych & Bio"}, c:"#ec407a", p:[
+        {it:"Costanza", en:"Consistency"}, {it:"Sfumature", en:"Nuances"}, {it:"Inganno", en:"Visual Trick"},
+        {it:"Finestra Godibilità", en:"Window"}, {it:"Sex Appeal", en:"Sex Appeal"},
+        {it:"Nutrizione", en:"Nutrition"}, {it:"Sazietà", en:"Satiety"}
+    ]},
+    { n: {it:"Logistica", en:"Logistics"}, c:"#d81b60", p:[
+        {it:"Sbucciabilità", en:"Peelability"}, {it:"Portabilità", en:"Portability"}, {it:"Seme Experience", en:"Seed Exp"},
+        {it:"Impegno Mentale", en:"Mental Load"}, {it:"Anatomia Scarto", en:"Waste"}, {it:"Versatilità", en:"Versatility"},
+        {it:"Buccia", en:"Peel Quality"}, {it:"Resa (Spreco)", en:"Yield"}
+    ]}
+];
+
+window.onload = () => {
+    const saved = localStorage.getItem('suvUser');
+    if(saved) { user = saved; start(); }
+    updateTexts();
+};
+
+function changeLang(v) { lang = v; updateTexts(); if(user) renderParams(); }
+
+function updateTexts() {
+    const t = translations[lang] || translations.en;
+    document.getElementById('txt_instr_title').innerText = t.instr_title;
+    document.getElementById('step1').innerText = t.step1;
+    document.getElementById('step2').innerText = t.step2;
+    document.getElementById('step3').innerText = t.step3;
+    document.getElementById('step4').innerText = t.step4;
+    document.getElementById('step5').innerText = t.step5;
+    document.getElementById('txt_remember').innerText = t.remember;
+    document.getElementById('btn_login').innerText = t.loginBtn;
+    document.getElementById('fruitSearch').placeholder = t.search;
+    document.getElementById('txt_totalScore').innerText = t.totalScore;
+    document.getElementById('btn_save').innerText = t.saveBtn;
+    document.getElementById('nav_vota').innerText = t.navVota;
+    document.getElementById('nav_grafico').innerText = t.navGrafico;
+    document.getElementById('nav_rank').innerText = t.navRank;
+    document.getElementById('txt_myRank').innerText = t.myRank;
+}
 
 function login() {
     user = document.getElementById('username').value.trim();
     if(!user) return;
+    if(document.getElementById('rememberMe').checked) localStorage.setItem('suvUser', user);
+    start();
+}
+
+function start() {
     document.getElementById('loginScreen').classList.remove('active');
     document.getElementById('ratingScreen').classList.add('active');
     document.getElementById('mainNav').style.display = 'flex';
+    document.getElementById('userDisplay').innerText = `ID: ${user.toUpperCase()}`;
     renderParams();
-}
-
-function changeLang(v) { lang = v; updateTexts(); }
-function updateTexts() {
-    document.getElementById('txt_welcome').innerText = translations[lang].welcome;
-    document.getElementById('btn_login').innerText = translations[lang].loginBtn;
-    document.getElementById('btn_save').innerText = translations[lang].saveBtn;
-    document.getElementById('txt_myRank').innerText = translations[lang].myRank;
 }
 
 function renderParams() {
@@ -194,26 +245,27 @@ function renderParams() {
     container.innerHTML = "";
     let idx = 0;
     groups.forEach(g => {
-        container.innerHTML += `<div class="group-header">${g.n}</div>`;
+        container.innerHTML += `<div class="group-header">${g.n[lang]}</div>`;
         const grid = document.createElement('div'); grid.className="grid";
         g.p.forEach(p => {
             grid.innerHTML += `
                 <div class="param-card" id="card_${idx}">
                     <button class="malos-btn" onclick="toggleMalos(${idx}, this)">MALOS</button>
-                    <strong style="color:var(--accent-dark)">${p[lang]}</strong>
+                    <strong style="color:var(--accent-dark)">${p[lang] || p.en}</strong>
                     <div class="slider-label">Valore <span id="v_t_${idx}">50</span></div>
                     <input type="range" id="v_${idx}" value="50" oninput="updateScore()">
-                    <div class="slider-label">Importanza (Peso) <span id="w_t_${idx}">50%</span></div>
+                    <div class="slider-label">Importanza <span id="w_t_${idx}">50%</span></div>
                     <input type="range" id="w_${idx}" value="50" oninput="updateScore()">
                 </div>`;
             idx++;
         });
         container.appendChild(grid);
     });
+    updateScore();
 }
 
 function toggleMalos(idx, btn) {
-    malos[idx] = !malos[idx];
+    malosState[idx] = !malosState[idx];
     btn.classList.toggle('malos-active');
     document.getElementById(`card_${idx}`).classList.toggle('malos-mode');
     updateScore();
@@ -221,14 +273,14 @@ function toggleMalos(idx, btn) {
 
 function updateScore() {
     let total = 0;
-    for(let i=0; i<8; i++) { // Numero di parametri caricati
+    for(let i=0; i<35; i++) {
         if(!document.getElementById(`v_${i}`)) continue;
         let v = parseInt(document.getElementById(`v_${i}`).value);
         let w = parseInt(document.getElementById(`w_${i}`).value);
         document.getElementById(`v_t_${i}`).innerText = v;
         document.getElementById(`w_t_${i}`).innerText = w + "%";
         let res = v * (w/100);
-        total += malos[i] ? (res * -1) : res;
+        total += malosState[i] ? (res * -1) : res;
     }
     document.getElementById('finalScore').innerText = Math.round(total);
 }
@@ -238,27 +290,42 @@ function showTab(id, el) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
     document.getElementById(id).classList.add('active');
     el.classList.add('active-nav');
+    if(id === 'chartScreen') drawChart();
     if(id === 'rankScreen') loadRanking();
 }
 
+function drawChart() {
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    const labels = groups.flatMap(g => g.p.map(p => p[lang] || p.en));
+    const vals = []; for(let i=0; i<35; i++) {
+        const el = document.getElementById(`v_${i}`);
+        vals.push(el ? el.value : 0);
+    }
+    if(radarChart) radarChart.destroy();
+    radarChart = new Chart(ctx, {
+        type: 'radar',
+        data: { labels: labels, datasets: [{ data: vals, backgroundColor: 'rgba(255, 133, 178, 0.2)', borderColor: '#ff85b2', borderWidth: 2 }] },
+        options: { responsive: true, maintainAspectRatio: false, scales: { r: { min:0, max:100, ticks:{display:false}, pointLabels:{font:{size:8}} } }, plugins:{legend:{display:false}} }
+    });
+}
+
 function saveData() {
-    const f = document.getElementById('fruitSearch').value || "Frutto Ignoto";
+    const f = document.getElementById('fruitSearch').value.trim() || "Ignoto";
     const s = document.getElementById('finalScore').innerText;
-    db.ref(`u/${user}/${f}`).set({ score: s });
-    alert("Salvato, Regina! ✨");
+    db.ref(`u/${user}/${f}`).set({ score: s, date: new Date().toLocaleDateString() });
+    alert("Analisi Sincronizzata! 🌸");
 }
 
 function loadRanking() {
     db.ref(`u/${user}`).once('value', s => {
         const d = s.val() || {};
-        document.getElementById('myList').innerHTML = Object.entries(d).map(e => `
-            <div style="background:white; padding:15px; border-radius:15px; margin-bottom:10px; border-left:5px solid var(--accent);">
-                <b>${e[0]}</b>: ${e[1].score} pt
+        document.getElementById('myList').innerHTML = Object.entries(d)
+            .sort((a,b) => b[1].score - a[1].score)
+            .map(e => `<div style="background:white; padding:15px; margin-bottom:10px; border-radius:15px; display:flex; justify-content:space-between; border-left:5px solid var(--accent);">
+                <b>${e[0]}</b> <span>${e[1].score} PT</span>
             </div>`).join('');
     });
 }
-
-updateTexts();
 </script>
 </body>
 </html>

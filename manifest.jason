@@ -1,0 +1,9 @@
+{
+  "name": "SUV-F Fruit Rating",
+  "short_name": "SUV-F",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#2c3e50",
+  "theme_color": "#3498db",
+  "icons":
+}

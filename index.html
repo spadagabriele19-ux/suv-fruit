@@ -958,29 +958,18 @@ function translateSite() {
 }
 
 function doLogin() {
-    const input = document.getElementById('user-input');
-    const val = input.value.trim();
-    if(!val) {
-        alert("Inserisci un ID Analista!");
+    const user = document.getElementById('user-input').value;
+    if (user.trim() === "") {
+        alert("Per favore, inserisci un ID Analista"); // O la traduzione corrispondente
         return;
     }
     
-    currentUser = val.replace(/[^a-zA-Z0-9]/g, '_');
-    if(document.getElementById('remember-me').checked) {
-        localStorage.setItem('suvf_user', currentUser);
-    }
+    // Nasconde il login e mostra l'app
+    document.getElementById('scr-login').classList.remove('active');
+    document.getElementById('scr-main').classList.add('active'); // Cambia 'scr-main' con l'ID della tua schermata principale
     
-    document.getElementById('scr-login').style.display = 'none';
-    document.getElementById('scr-vota').classList.add('active');
-    document.getElementById('app-header').style.display = 'flex';
-    document.getElementById('ui-nav').style.display = 'flex';
-    document.getElementById('ui-scorebar').style.display = 'flex';
-    document.getElementById('ui-id').innerText = currentUser.toUpperCase();
-    
-    renderParams();
-    updateRankings();
+    console.log("Analista loggato:", user);
 }
-
 function doLogout() {
     if(confirm("Sicuro di voler uscire?")) {
         localStorage.removeItem('suvf_user');

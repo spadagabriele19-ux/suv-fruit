@@ -18,7 +18,7 @@
         }
 
         * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background: var(--bg); margin: 0; padding-bottom: 80px; color: #333; }
+        body { background: var(--bg); margin: 0; padding-bottom: 250px ; color: #333; }
 
         /* Login & Info */
         .auth-container { max-width: 500px; margin: 40px auto; padding: 30px; background: white; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; }
@@ -152,15 +152,13 @@
     <button class="save-btn" id="btn-save-final" disabled onclick="cloudSave()">SALVA ANALISI</button>
 </div>
 
-<div id="ui-nav" class="nav-bar" style="display:none;">
-    <div class="nav-item active" onclick="nav('vota', this)">🍎 <span id="n1">Vota</span></div>
-    <div class="nav-item" onclick="nav('grafico', this)">📊 <span id="n2">Grafico</span></div>
-    <div class="nav-item" onclick="nav('classifiche', this)">🏆 <span id="n3">Classifiche</span></div>
-    <div class="nav-item" onclick="nav('algoritmo', this)">🧮 <span id="n4">Algoritmo</span></div>
+<div class="nav-bar" id="ui-nav" style="display:none;">
+    <div class="nav-item active" onclick="nav('vota', this)">VOTA</div>
+    <div class="nav-item" onclick="nav('grafico', this)">GRAFICO</div>
+    <div class="nav-item" onclick="nav('classifiche', this)">CLASSIFICHE</div>
 </div>
 
 <script>
-// --- CONFIGURAZIONE FIREBASE ---
 // --- CONFIGURAZIONE FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyASl7UbctX-4weq8w94ZUxCrOIhl3jjqME",
@@ -172,17 +170,14 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// --- STATO ---
+// --- STATO GLOBALE ---
 let currentUser = "";
 let negativeState = {};
 let chartInstance = null;
 let currentFruitSelection = "";
 
-// --- DATABASE 700 FRUTTI (Tagliato per brevità, usa la tua lista completa) ---
-const FRUIT_LIST = [
-  "Abiu", "Açai", "Acerola", "Ackee", "African Breadfruit", "African Mango", "African Star Apple", "Agave", "Akebi", "Albicocca", "Albicocca Reale d’Imola", "Albicocca Vesuviana", "Albicocca Val Venosta", "Albicocca Precoce", "Alchechengi", "Alexandria Strawberry", "Alpine Strawberry", "Amanatsu", "Amara", "Ambarella", "Ambrosia Apple", "Amla", "Ananas", "Ananas Smooth Cayenne", "Ananas Victoria", "Ananas Rosso", "Anacardo", "Anguria", "Anguria Crimson Sweet", "Anguria Sugar Baby", "Anguria Gialla", "Anguria Senza Semi", "Anguria Mini", "Annona Cherimola", "Annurca Apple", "Appleberry", "Aprium", "Araca-Boi", "Arancia", "Arancia Navel", "Arancia Valencia", "Arancia Tarocco", "Arancia Sanguinello", "Arancia Moro", "Arancia Bionda", "Arancia Rossa", "Argan", "Aronia", "Asian Pear", "Atemoya", "Australian Desert Lime", "Autumn Royal Grape", "Avocado", "Avocado Hass", "Avocado Fuerte", "Avocado Pinkerton", "Avocado Reed", "Azzeruolo Bianco", "Azzeruolo Rosso", "Alupag", "Alligator Apple", "Aratiles", "Araza", "Arabica Coffee Cherry", "Arkansas Black Apple", "Amarena", "Alphonso Mango", "Alice Apple", "Ashmead’s Kernel", "Aurora Pear", "Avana Mandarino", "Akebia Quinata", "American Persimmon", "Anjou Pear", "Babaco", "Bacuri", "Bael", "Banana Cavendish", "Banana Blue Java", "Banana Rossa", "Banana Nana", "Bananito", "Barbadine", "Barbados Cherry", "Barberry", "Batuan", "Beach Plum", "Bearberry", "Bergamotto", "Bignay", "Bilberry", "Bilimbi", "Biriba", "Biricoccolo", "Bitter Melon", "Black Apple", "Black Cherry", "Black Currant", "Black Mulberry", "Black Sapote", "Blackberry", "Blood Orange", "Blue Passionfruit", "Blueberry", "Boysenberry", "Bramble", "Brazil Nut", "Breadfruit", "Brush Cherry", "Buddha’s Hand", "Burmese Grape", "Button Mangosteen", "Bing Cherry", "Black Tartarian", "Blenheim Apricot", "Bosc Pear", "Braeburn Apple", "Bramley Apple", "Brogiotto Nero Fig", "Brogiotto Bianco Fig", "Black Amber Plum", "Blackcurrant", "Burlat Cherry", "Blue Honeysuckle", "Baobab Fruit", "Cacao", "Cactus Pear", "Caco", "Caco Mela", "Caco Tipo", "Calamansi", "Calamondin", "Camu Camu", "Canistel", "Cantalupo", "Cape Gooseberry", "Carambola", "Carissa", "Carruba", "Castagna", "Caviar Lime", "Cedro Diamante", "Cedro Voice", "Cempedak", "Ceylon Gooseberry", "Chayote", "Cherimoya", "Cherry", "Chinotto", "Chokeberry", "Ciliegia Ferrovia", "Ciliegia Durone di Vignola", "Ciliegia Marasca", "Ciliegia Visciola", "Ciliegia Giorgia", "Ciliegia Bigarreau", "Ciliegia Moretta", "Ciliegia Lapins", "Citron", "Clementina", "Cloudberry", "Cocco", "Cocona", "Cocomero", "Coffee Berry", "Corniolo", "Crab Apple", "Cranberry", "Cudrania", "Curuba", "Crimson Seedless Grape", "Cortland Apple", "Cosmic Crisp", "Cox’s Orange Pippin", "Cripps Pink", "Cupuaçu", "Custard Apple", "Cydonia", "Casaba Melon", "Charentais Melon", "Crenshaw Melon", "Caci mela", "Carosello", "Corbezzolo", "Damson", "Dattero Medjool", "Dattero Deglet Nour", "Dattero Hayani", "Davidson’s Plum", "Dewberry", "Dragon Fruit Bianco", "Dragon Fruit Rosso", "Dragon Fruit Giallo", "Durian Musang King", "Durian D24", "Eggfruit", "Elderberry", "Elephant Apple", "Emu Apple", "Etrog", "Envy Apple", "Empire Apple", "Eureka Lemon", "Falberry", "Feijoa", "Fico Dottato", "Fico Settembrino", "Fico Panaché", "Fico d’India Bianco", "Fico d’India Rosso", "Fico d’India Giallo", "Finger Lime Pink", "Finger Lime Green", "Finger Lime Yellow", "Fragola", "Fragolina di bosco", "Framboise", "Fuji Apple", "Fuyu Persimmon", "Forelle Pear", "Faustrime", "Feronia", "Flamboyant", "Fairchild Tangerine", "Fortune Mandarin", "Fantasia Nectarine", "Flavortop", "Fairhaven Peach", "Fayette", "Fiesta Apple", "Florina", "Fortune Plum", "Galia Melon", "Gamboge", "Garcinia", "Gelso Nero", "Gelso Bianco", "Gelso Rosso", "Genip", "Giaca", "Giuggiola", "Goji Berry", "Goldenberry", "Gooseberry", "Granadilla", "Grapefruit", "Grapes", "Greengage", "Ground Cherry", "Grumichama", "Guanabana", "Guava", "Guavaberry", "Gala Apple", "Golden Delicious", "Granny Smith", "Giorgia Cherry", "Goccia d’Oro Plum", "Guyot Pear", "Hackberry", "Hala Fruit", "Hardy Kiwi", "Hawthorn", "Heirloom Tomato", "Highbush Blueberry", "Honeydew", "Huckleberry", "Honeyberry", "Honeycrisp Apple", "Hyuganatsu", "Hachiya Persimmon", "Icaque", "Ice Cream Bean", "Illawarra Plum", "Imbe", "Indian Fig", "Indian Gooseberry", "Indian Plum", "Inga Edulis", "Interdonato Lemon", "Italia Grape", "Jabuticaba", "Jackfruit", "Jambul", "Jatobà", "Jelly Plum", "Jicaro", "Jostaberry", "Jujube", "Juniper Berry", "Jazz Apple", "Jonagold", "Jonathan Apple", "Juergen’s Plum", "Kaffir Lime", "Kandis", "Kapok", "Karonda", "Kei Apple", "Kepel", "Keule", "Kiwano", "Kiwi Hayward", "Kiwi Gold", "Kokum", "Korlan", "Kumquat Nagami", "Kumquat Marumi", "Kundong", "Kaiser Pear", "Kanzi Apple", "Keitt Mango", "Kent Mango", "Lampone Rosso", "Lampone Giallo", "Lampone Nero", "Langsat", "Lapsi", "Lemon", "Lemon Aspen", "Lime", "Limetta", "Limonello", "Litchi", "Loganberry", "Longan", "Loquat", "Lulo", "Lychee", "Lady Alice Apple", "Liberty Apple", "Lisbon Lemon", "Lucuma", "Mabolo", "Madrono", "Malay Apple", "Mamey Sapote", "Mammee Apple", "Mamoncillo", "Mandarin", "Mangaba", "Mango Tommy Atkins", "Mango Kent", "Mango Alphonso", "Mangostano", "Mano di Buddha", "Mapo", "Maracuja", "Marang", "Marionberry", "Mayapple", "Mayhaw", "Medlar", "Melograno", "Melone Retato", "Melone Mantovano", "Melone Piel de Sapo", "Mirtillo Nero", "Mirtillo Rosso", "Mirtillo Blu", "Miracle Fruit", "Mock Strawberry", "Monstera Deliciosa", "Mora di rovo", "Mountain Pepper", "Mulberry", "Mundu", "Muscadine", "Muskmelon", "McIntosh Apple", "Mutsu Apple", "Meyer Lemon", "Minneola Tangelo", "Moro Orange", "Musang King", "Nance", "Naranjilla", "Nashi", "Native Currant", "Nectarine", "Neem", "Nespola del Giappone", "Nespola Comune", "Noni", "Nutmeg", "Northern Spy Apple", "Navel Orange", "Ogeechee Lime", "Oil Palm", "Olallieberry", "Olive", "Orange", "Orangelo", "Oregon Grape", "Oroblanco", "Opal Apple", "Palmyra Fruit", "Papaya Formosa", "Papaya Solo", "Passion Fruit", "Pawpaw", "Peach", "Peach Palm", "Pear", "Pecan", "Pepino", "Persimmon", "Piatone", "Pigeon Plum", "Pili Nut", "Pineberry", "Pineapple", "Pitahaya", "Pitomba", "Platano", "Plum", "Pompelmo", "Pomegranate", "Pomelo", "Prugna", "Pulasan", "Pummelo", "Packham’s Triumph", "Passacrassana", "Percoca", "Pesca Saturnia", "Pesca Tabacchiera", "Pesca Gialla", "Pesca Bianca", "Pizzutella Grape", "Pink Lady Apple", "Pinkerton Avocado", "Ponkan Mandarin", "Prugnolo", "Prugna Damaschina", "Prugna della California", "Quandong", "Quince", "Rambai", "Rambutan", "Rangpur", "Raspberry", "Red Currant", "Riberry", "Ribes Rosso", "Ribes Bianco", "Ribes Nero", "Rollinia", "Rose Apple", "Rose Hip", "Rowan", "Royal Gala", "Red Delicious", "Red Bartlett", "Regina Cherry", "Regina Claudia Plum", "Salak", "Salal", "Salmonberry", "Santol", "Sapodilla", "Sapote Nero", "Sapote Bianco", "Sea Buckthorn", "Sea Grape", "Serviceberry", "Sloe", "Soursop", "Star Apple", "Starfruit", "Strawberry", "Sugar Apple", "Surinam Cherry", "Satsuma", "Sanguinello Orange", "Santa Maria Pear", "Sharlyn Melon", "Snow Queen Nectarine", "Stanley Plum", "Sudachi", "Tamarillo", "Tamarindo", "Tangelo", "Tangerine", "Tayberry", "Thimbleberry", "Thompson Seedless", "Ugli Fruit", "Ugni", "Uva Italia", "Uva Sultanina", "Uva Fragola", "Uva Spina Verde", "Uva Spina Rossa", "Valencia Orange", "Velvet Apple", "Vittoria Grape", "Wampee", "Water Apple", "White Sapote", "Wolfberry", "Wood Apple", "Ximenia", "Yangmei", "Youngberry", "Yuzu", "Ziziphus", "Zucchini", "Abiu Oro", "Amanatsu Orange", "Ambrosia Pear", "Amla Berry", "Anjou Red Pear", "Aprium Honey", "Aroniaberry", "Asian Nashi", "Atemoya Geffner", "Avocado Bacon", "Avocado Zutano", "Bananito Sweet", "Barberry Black", "Bignay Berry", "Bilimbi Fruit", "Blackberry Giant", "Blood Lime", "Boysenberry Hybrid", "Breadfruit White", "Buddha Finger", "Calamansi Sour", "Cantalupo di Charentais", "Carambola Star", "Cedro di Calabria", "Cempedak Wild", "Cherry Heart", "Clementina del Golfo", "Cloudberry Gold", "Cocco di mare", "Coffee Berry Red", "Corniolo Rosso", "Cranberry Wild", "Curuba Long", "Damson Blue", "Dattero di Israele", "Dragon Fruit Yellow", "Durian King", "Elderberry Black", "Feijoa Sellowiana", "Fico d'India", "Finger Lime Red", "Fragola Veneta", "Fuji Red", "Galia Sweet", "Gelso Bianco di Sicilia", "Giuggiola di Arquà", "Goji Tibet", "Granadilla Dolce", "Grapefruit Ruby", "Guava Pink", "Honeydew Green", "Jackfruit Honey", "Jujube Chinese", "Kiwano Horned", "Kiwi Soreli", "Kumquat Sweet", "Lampone di bosco", "Litchi China", "Longan Berry", "Loquat Japan", "Lulo Fruit", "Mandarino Tardivo", "Mango Maya", "Mangostano Queen", "Maracuja Viola", "Melograno Dente di Cavallo", "Melone di Paceco", "Mirtillo Gigante", "Mora Selvatica", "Nashi Hosui", "Nectarine Rose", "Nespola di Germania", "Noni Juice Fruit", "Papaya Green", "Passion Yellow", "Peach Red", "Pear Kaiser Alexander", "Pepino Melon", "Persimmon Apple", "Pitahaya Pink", "Platano Verde", "Plum Black", "Pomegranate Red", "Pomelo Pink", "Prugna di Dro", "Rambutan Hairy", "Raspberry Wild", "Ribes Sativum", "Salak Snake", "Sapodilla Brown", "Sapote Chocolate", "Soursop White", "Starfruit Yellow", "Strawberry Garden", "Sugar Apple Green", "Tamarindo Sour", "Tangelo Minneola", "Tangerine Sweet", "Uva Apirena", "Uva Moscato", "Uva Red Globe", "Uva Thompson", "Watermelon Mini", "White Currant", "Wild Berry", "Wolfberry Red", "Yuzu Lemon", "Ziziphus Jujuba", "Zucchini Flower Fruit", "Albicocca Pellechiella", "Arancia Navelina", "Clementina Tardiva", "Mandarino Avana", "Mela Stark Delicious", "Pera Abate Fetel", "Pesca Bianca di Verona", "Susina Goccia d'Oro", "Uva Pizzutella", "Ananas Baby", "Avocado Ettinger", "Banana Baby", "Ciliegia del Monte", "Fico Fiorone", "Melone Galia", "Mirtillo Nero Foresta", "Pompelmo Jaffa", "Ribes Nero di Borgogna", "Uva Italia di Canicattì", "Amarena di Cantiano", "Ciliegia di Marostica", "Fico di Cosenza", "Limone di Siracusa", "Mela della Val di Non", "Nocciola Giffoni", "Pera dell'Emilia", "Pesca di Leonforte", "Uva di Puglia", "Zafferano Frutto", "Anona del Portogallo", "Bacca di Ginepro", "Crespino", "Fico di Smirne", "Mela Cotogna di Bivona", "Nespola Gigante", "Pera Coscia di Ribera", "Susina Coscia di Donna", "Uva di Pantelleria", "Albicocca Vesuviana", "Arancia di Ribera", "Ciliegia dell'Etna", "Fico d'India dell'Etna", "Limone di Rocca Imperiale", "Mela Alto Adige", "Nocciola del Piemonte", "Pera Mantovana", "Pesca di Volpedo", "Uva di Mazzarrone", "Clementina di Calabria", "Limone Costa d'Amalfi", "Melone Mantovano IGP", "Pera dell'Emilia Romagna", "Pesca Nettarina di Romagna", "Uva di Canicattì", "Castagna di Cuneo", "Marrone del Mugello", "Nocciola Romana", "Pistacchio di Bronte"
-]
-
+// --- DATABASE FRUTTI (Incolla qui la tua lista da 700 nomi) ---
+const FRUIT_LIST = ["Abiu", "Açai", "Albicocca", "Ananas", "Anguria", "Avocado", "Banana", "Ciliegia", "Fico", "Fragola", "Kiwi", "Limone", "Mela", "Mango", "Melone", "Mirtillo", "Pera", "Pesca", "Pompelmo", "Uva", "Zucchini"]; 
 
 const DESCRIZIONI = {
     "Brix": "Quanto é dolce? (Es. Avocado 0; Dattero 100).",
@@ -190,35 +185,35 @@ const DESCRIZIONI = {
     "Intensità": "Potenza del sapore. Sinistra: poco saporito; Destra: intensissimo.",
     "Amarezza": "Sinistra: per niente amaro; Destra: amarissimo.",
     "Aftertaste": "Persistenza post-consumo. Sinistra: breve; Destra: lungo tempo.",
-    "Astringenza": "Quanto lega la bocca? Sinistra: per niente; Destra: tantissimo (Mirto).",
-    "Tropicalità": "Vibes tropicali (non origine). Sinistra: nessuna; Destra: massima.",
-    "Mente Pulita": "Capacità di pulire il palato (Es. Arancia). Sinistra: zero; Destra: perfetta.",
+    "Astringenza": "Quanto lega la bocca? Sinistra: per niente; Destra: tantissimo.",
+    "Tropicalità": "Vibes tropicali. Sinistra: nessuna; Destra: massima.",
+    "Mente Pulita": "Capacità di pulire il palato. Sinistra: zero; Destra: perfetta.",
     "Soddisfazione": "Appagamento mangiandolo. Sinistra: nullo; Destra: incredibile.",
     "Crunchiness": "Croccantezza strutturale (Mela). Sinistra: nulla; Destra: massima.",
     "Crispyness": "Croccantezza vitrea superficiale (Uva). Sinistra: nulla; Destra: massima.",
     "Carnosità": "Densità polpa (Papaya). Sinistra: inconsistente; Destra: molto carnosa.",
-    "Succosità": "Liquido al morso. Sinistra: asciutto; Destra: esplosione (Arancia).",
+    "Succosità": "Liquido al morso. Sinistra: asciutto; Destra: esplosione.",
     "Cremosità": "Texture vellutata. Sinistra: acquosa; Destra: massima (Avocado).",
-    "Viscidità": "Polpa viscida. Sinistra: per niente; Destra: estrema (Passion fruit).",
+    "Viscidità": "Polpa viscida. Sinistra: per niente; Destra: estrema.",
     "Secchezza": "Fibra asciutta (Cocco). Sinistra: umido; Destra: secchezza totale.",
     "Farinosità": "Probabilità di pasta sabbiosa. Sinistra: impossibile; Destra: assicurata.",
     "Gag Index": "Fastidio alla gola. Sinistra: facile; Destra: probabili conati.",
     "Sound Design": "Soddisfazione rumore morso. Sinistra: silenzioso; Destra: premium.",
-    "Costanza": "Ananas Factor: probabilità esemplare buono. Sinistra: roulette; Destra: garanzia.",
-    "Sfumature": "Salto buono/cattivo. Sinistra: netto (Nespola); Destra: infinito (Arancia).",
-    "Inganno": "Quanto l'aspetto mente (Mirtilli). Sinistra: onesto; Destra: bugiardo.",
+    "Costanza": "Probabilità esemplare buono. Sinistra: roulette; Destra: garanzia.",
+    "Sfumature": "Salto buono/cattivo. Sinistra: netto; Destra: infinito.",
+    "Inganno": "Quanto l'aspetto mente. Sinistra: onesto; Destra: bugiardo.",
     "Finestra Godibilità": "Durata momento perfezione. Sinistra: un attimo; Destra: eterno.",
     "Sex Appeal": "Prestigio nel buffet. Sinistra: umile; Destra: re del buffet.",
-    "Fibrosità": "Presenza di filamenti (Mango). Sinistra: nulla; Destra: massima.",
-    "Nutrizione": "Densità vitamine/benefici. Sinistra: acqua sporca; Destra: superfood.",
+    "Fibrosità": "Presenza di filamenti. Sinistra: nulla; Destra: massima.",
+    "Nutrizione": "Densità vitamine. Sinistra: acqua sporca; Destra: superfood.",
     "Sazietà": "Senso di pienezza. Sinistra: nullo; Destra: pasto completo.",
-    "Sbucciabilità": "Facilità accesso. Sinistra: serve officina; Destra: si sbuccia solo.",
+    "Sbucciabilità": "Facilità accesso. Sinistra: difficile; Destra: facile.",
     "Portabilità": "Resistenza urti (Zaino). Sinistra: delicato; Destra: indistruttibile.",
-    "Seme Experience": "Seme come piacere o ostacolo. Sinistra: fastidio; Destra: valore (Melograno).",
-    "Impegno Mentale": "Attenzione richiesta. Sinistra: relax; Destra: massima (Fico d'India).",
-    "Anatomia Scarto": "Fastidio resti (Cadavere). Sinistra: sparisce; Destra: ingombrante.",
-    "Versatilità": "Uso cucina/cocktail. Sinistra: solo così com'è; Destra: mille usi.",
-    "Buccia": "Bontà scorza. Sinistra: inutile; Destra: oro gastronomico (Limone).",
+    "Seme Experience": "Seme come ostacolo. Sinistra: fastidio; Destra: valore.",
+    "Impegno Mentale": "Attenzione richiesta. Sinistra: relax; Destra: massima.",
+    "Anatomia Scarto": "Fastidio resti. Sinistra: sparisce; Destra: ingombrante.",
+    "Versatilità": "Uso cucina/cocktail. Sinistra: solo così; Destra: mille usi.",
+    "Buccia": "Bontà scorza. Sinistra: inutile; Destra: oro gastronomico.",
     "Resa (Spreco)": "Rapporto polpa/scarto. Sinistra: mangi tutto; Destra: butti metà."
 };
 
@@ -229,15 +224,13 @@ const PARAMS = [
     { cat: "Logistica", color: "var(--c-logistica)", fields: ["Sbucciabilità", "Portabilità", "Seme Experience", "Impegno Mentale", "Anatomia Scarto", "Versatilità", "Buccia", "Resa (Spreco)"] }
 ];
 
-// --- LOGICA CORE ---
-
+// --- INIZIALIZZAZIONE ---
 window.onload = () => {
     const savedUser = localStorage.getItem('suvf_user');
     if (savedUser) {
         document.getElementById('user-input').value = savedUser;
         doLogin();
     }
-
     const dl = document.getElementById('fruit-db');
     if (dl) {
         dl.innerHTML = "";
@@ -252,17 +245,15 @@ window.onload = () => {
 function doLogin() {
     currentUser = document.getElementById('user-input').value.trim().replace(/[^a-zA-Z0-9]/g, '_');
     if(!currentUser) return alert("Inserire ID");
-    
     if(document.getElementById('remember-me').checked) localStorage.setItem('suvf_user', currentUser);
-    
     document.getElementById('scr-login').classList.remove('active');
     document.getElementById('scr-vota').classList.add('active');
     document.getElementById('app-header').style.display = 'flex';
     document.getElementById('ui-nav').style.display = 'flex';
     document.getElementById('ui-scorebar').style.display = 'flex';
     document.getElementById('ui-id').innerText = currentUser.toUpperCase();
-    
     renderParams();
+    updateRankings();
 }
 
 function renderParams() {
@@ -280,7 +271,7 @@ function renderParams() {
                         <div style="font-weight:900; font-size:0.9rem">${f}</div>
                         <div onclick="toggleInfo(${i})" style="cursor:pointer; background:var(--gray); border-radius:50%; width:18px; height:18px; display:flex; align-items:center; justify-content:center; font-size:0.6rem; font-weight:900;">?</div>
                     </div>
-                    <div id="info-${i}" style="display:none; font-size: 0.7rem; color: #546e7a; font-style: italic; margin-top:5px; background:#f1f8e9; padding:5px; border-radius:5px;">
+                    <div id="info-${i}" style="display:none; font-size: 0.7rem; color: #546e7a; font-style: italic; margin-top:5px; background:#f1f8e9; padding:5px; border-radius:5px; border:1px dashed #ccc;">
                         ${DESCRIZIONI[f] || ""}
                     </div>
                     <div class="slider-row">
@@ -317,7 +308,6 @@ function validateSelection() {
     const btn = document.getElementById('btn-save-final');
     const userVal = input.value.trim().toLowerCase();
     const match = FRUIT_LIST.find(f => f.toLowerCase() === userVal);
-
     if (match) {
         input.className = "main-search valid";
         input.value = match;
@@ -326,6 +316,7 @@ function validateSelection() {
     } else {
         input.className = "main-search invalid";
         btn.disabled = true;
+        currentFruitSelection = "";
     }
 }
 
@@ -350,6 +341,7 @@ function nav(id, el) {
     document.getElementById('scr-'+id).classList.add('active');
     el.classList.add('active');
     if(id === 'grafico') updateRadar();
+    if(id === 'classifiche') updateRankings();
 }
 
 function updateRadar() {
@@ -360,7 +352,6 @@ function updateRadar() {
         style.getPropertyValue('--c-psiche').trim(),
         style.getPropertyValue('--c-logistica').trim()
     ];
-
     const labels = []; const data = []; const pointColors = [];
     let i = 0;
     PARAMS.forEach((g, gIdx) => g.fields.forEach(f => {
@@ -369,7 +360,6 @@ function updateRadar() {
         pointColors.push(coloriCategorie[gIdx]);
         i++;
     }));
-
     const ctx = document.getElementById('radarChart').getContext('2d');
     if(chartInstance) chartInstance.destroy();
     chartInstance = new Chart(ctx, {
@@ -379,24 +369,44 @@ function updateRadar() {
             datasets: [{
                 label: currentFruitSelection || 'Analisi',
                 data: data,
-                backgroundColor: 'rgba(240, 98, 146, 0.2)',
+                backgroundColor: 'rgba(240, 98, 146, 0.1)',
                 borderColor: '#f06292',
                 pointBackgroundColor: pointColors,
                 pointBorderColor: '#fff',
+                pointRadius: 4,
                 borderWidth: 2
             }]
         },
         options: { 
-            scales: { 
-                r: { 
-                    min: 0, max: 100, ticks: { display: false },
-                    pointLabels: { color: (ctx) => pointColors[ctx.index], font: { weight: 'bold' } }
-                } 
-            },
+            responsive: true, maintainAspectRatio: false,
+            scales: { r: { min: 0, max: 100, ticks: { display: false }, pointLabels: { color: (ctx) => pointColors[ctx.index], font: { weight: 'bold', size: 10 } } } },
             plugins: { legend: { display: false } }
         }
     });
 }
-</script>
+
+function cloudSave() {
+    if (!currentFruitSelection) return alert("Seleziona un frutto!");
+    const score = parseInt(document.getElementById('live-score').innerText);
+    const analysisData = { user: currentUser, fruit: currentFruitSelection, score: score, timestamp: Date.now() };
+    db.ref('analyses/' + currentUser + '/' + currentFruitSelection).set(analysisData);
+    db.ref('global_rankings/' + currentFruitSelection + '_' + currentUser).set(analysisData)
+    .then(() => { alert("Salvato!"); updateRankings(); });
+}
+
+function updateRankings() {
+    db.ref('analyses/' + currentUser).orderByChild('score').limitToLast(10).on('value', snap => {
+        const list = document.getElementById('list-pers');
+        list.innerHTML = "";
+        let items = []; snap.forEach(c => { items.push(c.val()); });
+        items.reverse().forEach(item => { list.innerHTML += `<div class="rank-item"><span>${item.fruit}</span><span style="color:var(--accent)">${item.score}</span></div>`; });
+    });
+    db.ref('global_rankings').orderByChild('score').limitToLast(10).on('value', snap => {
+        const list = document.getElementById('list-glob');
+        list.innerHTML = "";
+        let items = []; snap.forEach(c => { items.push(c.val()); });
+        items.reverse().forEach(item => { list.innerHTML += `<div class="rank-item"><span>${item.fruit} <small>(${item.user})</small></span><span style="color:var(--accent)">${item.score}</span></div>`; });
+    });
+}
 </body>
 </html>

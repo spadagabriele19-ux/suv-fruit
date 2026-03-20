@@ -87,12 +87,12 @@
         S.U.V.F. <span id="ui-id" style="color:var(--accent); font-size:0.7rem; margin-left:10px;"></span>
     </div>
     <div style="display: flex; align-items: center; gap: 10px;">
-        <select id="lang-select" onchange="syncLang(this)" style="border:none; background:var(--gray); padding:5px 10px; border-radius: 10px; font-weight:800;">
-            <option value="it">🇮🇹 IT</option>
-            <option value="en">🇬🇧 EN</option>
-            <option value="es">🇪🇸 ES</option>
-            <option value="fr">🇫🇷 FR</option>
-        </select>
+   <select id="lang-select" onchange="syncLang(this)">
+    <option value="it">🇮🇹 IT</option>
+    <option value="en">🇬🇧 EN</option>
+    <option value="es">🇪🇸 ES</option>
+    <option value="fr">🇫🇷 FR</option>
+</select>
         <div onclick="doLogout()" style="cursor:pointer; background:var(--negativo); color:white; padding:5px 12px; border-radius: 10px; font-size:0.7rem; font-weight:900;">OUT 🚪</div>
     </div>
 </div>
@@ -225,6 +225,31 @@
 </div>
 
 <script>
+const PARAM_TRAD = {
+    it: {
+        cats: ["Gusto", "Meccanica", "Psiche & Bio", "Logistica"],
+        names: ["Brix", "Acidità", "Intensità", "Amarezza", "Aftertaste", "Astringenza", "Tropicalità", "Mente Pulita", "Soddisfazione", "Crunchiness", "Crispyness", "Carnosità", "Succosità", "Cremosità", "Viscidità", "Secchezza", "Farinosità", "Gag Index", "Sound Design", "Costanza", "Sfumature", "Inganno", "Finestra Godibilità", "Sex Appeal", "Fibrosità", "Nutrizione", "Sazietà", "Sbucciabilità", "Portabilità", "Seme Experience", "Impegno Mentale", "Anatomia Scarto", "Versatilità", "Buccia", "Resa (Spreco)"],
+        infos: ["Quanto é dolce? (Es. Avocado 0; Dattero 100).", "Livello di acidità (Limone = 100).", "Potenza del sapore complessivo.", "Presenza di note amare.", "Persistenza del gusto dopo il boccone.", "Quanto 'lega' la lingua.", "Vibrazioni da frutto esotico.", "Capacità di resettare il palato.", "Appagamento psicofisico immediato.", "Croccantezza della struttura (Mela).", "Croccantezza della buccia/superficie (Uva).", "Consistenza della polpa.", "Quantità di liquido rilasciato al morso.", "Texture vellutata (Avocado).", "Sensazione di viscido/scivoloso.", "Mancanza di umidità nella fibra.", "Tendenza a diventare 'farina' in bocca.", "Rischio di stimolare il riflesso del vomito.", "Qualità del rumore prodotto al morso.", "Probabilità di trovare un frutto sempre buono.", "Varietà di sapori all'interno dello stesso frutto.", "Quanto l'aspetto estetico tradisce il sapore.", "Tempo utile prima che il frutto marcisca.", "Bellezza e presentazione nel piatto.", "Presenza di filamenti fastidiosi.", "Ricchezza di vitamine e nutrienti.", "Capacità di togliere la fame.", "Facilità nel rimuovere la buccia.", "Resistenza agli urti (trasporto in zaino).", "Fastidio o valore aggiunto dei semi.", "Concentrazione richiesta per mangiarlo.", "Volume e fastidio dei resti (bucce/noccioli).", "Utilizzo in cucina o cocktail.", "Qualità e sapore della pelle.", "Percentuale di polpa rispetto allo scarto."]
+    },
+    en: {
+        cats: ["Taste", "Mechanics", "Psyche & Bio", "Logistics"],
+        names: ["Brix", "Acidity", "Intensity", "Bitterness", "Aftertaste", "Astringency", "Tropicality", "Palate Cleanse", "Satisfaction", "Crunchiness", "Crispiness", "Fleshiness", "Juiciness", "Creaminess", "Sliminess", "Dryness", "Mealiness", "Gag Index", "Sound Design", "Consistency", "Nuances", "Deception", "Enjoyment Window", "Sex Appeal", "Fibrousness", "Nutrition", "Satiety", "Peelability", "Portability", "Seed Experience", "Mental Effort", "Waste Anatomy", "Versatility", "Peel", "Yield (Waste)"],
+        infos: ["How sweet is it? (Ex. Avocado 0; Date 100).", "Level of acidity (Lemon = 100).", "Overall flavor power.", "Presence of bitter notes.", "Persistence of taste after the bite.", "How much it 'binds' the tongue.", "Exotic fruit vibrations.", "Ability to reset the palate.", "Immediate psychophysical fulfillment.", "Structural crunch (Apple).", "Skin/surface crunch (Grape).", "Consistency of the pulp.", "Amount of liquid released upon biting.", "Velvety texture (Avocado).", "Slimy or slippery sensation.", "Lack of moisture in the fiber.", "Tendency to become 'floury' in the mouth.", "Risk of stimulating the gag reflex.", "Quality of the noise produced at the bite.", "Probability of finding a consistently good fruit.", "Variety of flavors within the same fruit.", "How much the appearance betrays the flavor.", "Useful time before the fruit rots.", "Beauty and presentation on the plate.", "Presence of annoying filaments.", "Richness of vitamins and nutrients.", "Ability to satisfy hunger.", "Ease of removing the peel.", "Shock resistance (backpack transport).", "Nuisance or added value of seeds.", "Concentration required to eat it.", "Volume and nuisance of remains (peels/pits).", "Use in cooking or cocktails.", "Quality and flavor of the skin.", "Percentage of pulp compared to waste."]
+    }
+};
+
+const UI_STRINGS = {
+    it: {
+        logicTitle: "Logica di Calcolo SUV-F",
+        logicDesc: "Il punteggio finale non è una semplice media. Ogni parametro ha un <b>Peso (0-100%)</b> che ne determina l'importanza. Se un parametro è marcato come <b>NEGATIVO</b>, il suo valore viene sottratto. La formula finale è la somma ponderata di tutti i fattori.",
+        navVota: "VOTA", navGraf: "GRAFICO", navRank: "CLASSIFICHE", navLog: "LOGICA"
+    },
+    en: {
+        logicTitle: "SUV-F Calculation Logic",
+        logicDesc: "The final score is not a simple average. Each parameter has a <b>Weight (0-100%)</b> that determines its importance. If a parameter is marked as <b>NEGATIVE</b>, its value is subtracted. The final formula is the weighted sum of all factors.",
+        navVota: "VOTE", navGraf: "CHART", navRank: "RANKING", navLog: "LOGIC"
+    }
+};
 // 1. Array completo corretto
 const FRUIT_DATA = [
     { "it": "Albicocca", "en": "Apricot", "fr": "Abricot", "es": "Albaricoque" },
@@ -865,12 +890,34 @@ function applyToSliders(params) {
 }
 
 function syncLang(el) {
-    const val = el.value;
-    const loginSelect = document.getElementById('lang-select-login');
-    const headerSelect = document.getElementById('lang-select');
-    if (loginSelect) loginSelect.value = val;
-    if (headerSelect) headerSelect.value = val;
-    translateSite();
+    const lang = el.value;
+    
+    // 1. Salva i valori attuali
+    let currentVals = [];
+    for(let i=0; i<35; i++){
+        currentVals.push({
+            v: document.getElementById(`v-sli-${i}`).value,
+            w: document.getElementById(`w-sli-${i}`).value
+        });
+    }
+
+    // 2. Aggiorna l'interfaccia fissa (Nav e Logica)
+    document.getElementById('txt-logic-title').innerText = UI_STRINGS[lang].logicTitle;
+    document.getElementById('logic-content').innerHTML = `<p>${UI_STRINGS[lang].logicDesc}</p>`;
+    document.getElementById('nav-vota').innerText = UI_STRINGS[lang].navVota;
+    document.getElementById('nav-graf').innerText = UI_STRINGS[lang].navGraf;
+    document.getElementById('nav-rank').innerText = UI_STRINGS[lang].navRank;
+    document.getElementById('nav-log').innerText = UI_STRINGS[lang].navLog;
+
+    // 3. Rigenera la lista parametri con i nuovi nomi/info
+    renderParams(lang); 
+
+    // 4. Ripristina i valori salvati
+    for(let i=0; i<35; i++){
+        document.getElementById(`v-sli-${i}`).value = currentVals[i].v;
+        document.getElementById(`w-sli-${i}`).value = currentVals[i].w;
+    }
+    calc(); // Ricalcola il punteggio finale
 }
 
 function translateSite() {

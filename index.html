@@ -121,7 +121,7 @@
 </head>
 <body>
 
-<!-- HEADER CON LOGOUT -->
+<!-- HEADER UNICO -->
 <div id="app-header" class="header" style="display:none;">
     <div style="font-weight: 900; letter-spacing: -1px;">
         S.U.V.F. <span id="ui-id" style="color:var(--accent); font-size:0.7rem; margin-left:10px;"></span>
@@ -136,13 +136,11 @@
         <div onclick="doLogout()" style="cursor:pointer; background:var(--negativo); color:white; padding:5px 12px; border-radius:10px; font-size:0.7rem; font-weight:900;">OUT 🚪</div>
     </div>
 </div>
-
 <!-- LOGIN SCREEN -->
 <div id="scr-login" class="screen active">
     <div class="auth-container">
         <h1 id="txt-title">S.U.V.F.</h1>
         
-        <!-- SELETTORE LINGUA INIZIALE -->
         <div style="margin-bottom: 20px;">
             <select id="lang-select-login" onchange="syncLang(this)" style="width:100%; padding:12px; border-radius:15px; border:2px solid var(--gray); font-weight:700; background:#f8f9fa;">
                 <option value="it">🇮🇹 Italiano</option>
@@ -166,8 +164,6 @@
         <button class="save-btn" style="width:100%; padding:18px;" onclick="doLogin()" id="txt-login-btn">LOG IN / ACCEDI</button>
     </div>
 </div>
-    
-
 <!-- VOTA SCREEN -->
 <div id="scr-vota" class="screen">
     <div class="search-wrap">
@@ -584,64 +580,6 @@ const UI_STRINGS = {
     fr: { title: "S.U.É.F.", info: "Bienvenue dans le Système Universel d'Évaluation...", loginBtn: "CONNEXION", searchPh: "RECHERCHER UN FRUIT...", personal: "PERSONNEL", global: "GLOBAL", saveBtn: "ENREGISTRER", rem: "Rester connecté" }
 };
 
-function translateSite() {
-    const lang = document.getElementById('lang-select').value;
-    const s = UI_STRINGS[lang];
-
-    // Traduzione testi UI
-    document.getElementById('txt-title').innerText = s.title;
-    document.getElementById('txt-info').innerHTML = s.info;
-    document.getElementById('txt-login-btn').innerText = s.loginBtn;
-    document.getElementById('fruit-search').placeholder = s.searchPh;
-    document.getElementById('txt-rank-p').innerText = s.personal;
-    document.getElementById('txt-rank-g').innerText = s.global;
-    document.getElementById('btn-save-final').innerText = s.saveBtn;
-    document.getElementById('txt-rem').innerText = s.rem;
-
-    // Traduzione dinamica delle categorie dei parametri
-    const catTranslations = {
-        it: ["Gusto", "Meccanica", "Psiche & Bio", "Logistica"],
-        en: ["Taste", "Mechanics", "Psyche & Bio", "Logistics"],
-        es: ["Gusto", "Mecánica", "Psique & Bio", "Logística"],
-        fr: ["Goût", "Mécanique", "Psyché & Bio", "Logistique"]
-    };
-    
-    PARAMS.forEach((group, index) => {
-        group.cat = catTranslations[lang][index];
-    });
-
-    // Se l'utente è loggato, ridisegna i parametri nella nuova lingua
-    if (currentUser) {
-        renderParams(); 
-    }
-}
-function doLogin() {
-    // Prende l'ID dall'input giusto (user-input)
-    const input = document.getElementById('user-input');
-    currentUser = input.value.trim().replace(/[^a-zA-Z0-9]/g, '_');
-    
-    if(!currentUser) {
-        alert("Inserisci un ID Analista!");
-        return;
-    }
-
-    // Se la spunta è attiva, salva il nome
-    if(document.getElementById('remember-me').checked) {
-        localStorage.setItem('suvf_user', currentUser);
-    }
-
-    // Nasconde il login e mostra l'app
-    document.getElementById('scr-login').classList.remove('active');
-    document.getElementById('scr-vota').classList.add('active');
-    document.getElementById('app-header').style.display = 'flex';
-    document.getElementById('ui-nav').style.display = 'flex';
-    document.getElementById('ui-scorebar').style.display = 'flex';
-    document.getElementById('ui-id').innerText = currentUser.toUpperCase();
-    
-    // Carica i parametri e le classifiche
-    renderParams();
-    updateRankings();
-}
 
 function renderParams() {
     const container = document.getElementById('params-container');
@@ -738,48 +676,7 @@ function nav(id, el) {
     if(id === 'grafico') updateRadar();
     if(id === 'classifiche') updateRankings();
 }
-// Forza la traduzione e sincronizza i due menu a tendina
-function syncLang(el) {
-    const val = el.value;
-    document.getElementById('lang-select').value = val;
-    translateSite(); // Questa funzione ora cambierà anche il testo di benvenuto
-}
 
-// Funzione Log In corretta
-function doLogin() {
-    const input = document.getElementById('user-input');
-    const val = input.value.trim();
-    
-    if(!val) {
-        alert("Inserisci un ID Analista!");
-        return;
-    }
-
-    currentUser = val.replace(/[^a-zA-Z0-9]/g, '_');
-    
-    if(document.getElementById('remember-me').checked) {
-        localStorage.setItem('suvf_user', currentUser);
-    }
-
-    // Mostra l'app
-    document.getElementById('scr-login').classList.remove('active');
-    document.getElementById('scr-vota').classList.add('active');
-    document.getElementById('app-header').style.display = 'flex';
-    document.getElementById('ui-nav').style.display = 'flex';
-    document.getElementById('ui-scorebar').style.display = 'flex';
-    document.getElementById('ui-id').innerText = currentUser.toUpperCase();
-    
-    renderParams();
-    updateRankings();
-}
-
-// Funzione Log Out
-function doLogout() {
-    if(confirm("Vuoi uscire?")) {
-        localStorage.removeItem('suvf_user');
-        window.location.reload();
-    }
-}
 function updateRadar() {
     const style = getComputedStyle(document.body);
     const coloriCategorie = [
@@ -1118,11 +1015,6 @@ function filterFruits() {
     });
 }
 
-function syncLang(el) {
-    const val = el.value;
-    document.getElementById('lang-select').value = val; // Sincronizza header
-    translateSite();
-}
 function validateSelection() {
     const input = document.getElementById('fruit-search');
     const btn = document.getElementById('btn-save-final');
@@ -1145,6 +1037,78 @@ function validateSelection() {
         input.className = "main-search invalid";
         btn.disabled = true;
         currentFruitSelection = "";
+    }
+}
+
+function syncLang(el) {
+    const val = el.value;
+    
+    // 1. Allinea entrambi i selettori sullo stesso valore
+    const loginSelect = document.getElementById('lang-select-login');
+    const headerSelect = document.getElementById('lang-select');
+    
+    if (loginSelect) loginSelect.value = val;
+    if (headerSelect) headerSelect.value = val;
+
+    // 2. Esegue la traduzione di tutti i testi (incluso il benvenuto)
+    translateSite();
+}
+
+function translateSite() {
+    const lang = document.getElementById('lang-select').value;
+    const s = UI_STRINGS[lang];
+
+    if (!s) return;
+
+    // Traduzione testi principali
+    document.getElementById('txt-title').innerText = s.title;
+    document.getElementById('txt-info').innerHTML = s.info;
+    document.getElementById('txt-login-btn').innerText = s.loginBtn;
+    document.getElementById('fruit-search').placeholder = s.searchPh;
+    document.getElementById('txt-rank-p').innerText = s.personal;
+    document.getElementById('txt-rank-g').innerText = s.global;
+    document.getElementById('btn-save-final').innerText = s.saveBtn;
+    document.getElementById('txt-rem').innerText = s.rem;
+
+    // Se siamo già dentro l'app, aggiorna i parametri
+    if (currentUser) renderParams(); 
+}
+
+function doLogin() {
+    const input = document.getElementById('user-input');
+    const val = input.value.trim();
+    
+    if(!val) {
+        alert("Inserisci un ID Analista!");
+        return;
+    }
+
+    // Trasforma il nome in un ID valido per Firebase
+    currentUser = val.replace(/[^a-zA-Z0-9]/g, '_');
+    
+    // Salvataggio locale
+    if(document.getElementById('remember-me').checked) {
+        localStorage.setItem('suvf_user', currentUser);
+    }
+
+    // Cambio Schermata
+    document.getElementById('scr-login').style.display = 'none';
+    document.getElementById('scr-vota').classList.add('active');
+    
+    // Mostra UI di navigazione
+    document.getElementById('app-header').style.display = 'flex';
+    document.getElementById('ui-nav').style.display = 'flex';
+    document.getElementById('ui-scorebar').style.display = 'flex';
+    document.getElementById('ui-id').innerText = currentUser.toUpperCase();
+    
+    renderParams();
+    updateRankings();
+}
+
+function doLogout() {
+    if(confirm("Sicuro di voler uscire?")) {
+        localStorage.removeItem('suvf_user');
+        window.location.reload();
     }
 }
 

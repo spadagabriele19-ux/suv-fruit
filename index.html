@@ -121,36 +121,48 @@
 </head>
 <body>
 
-<!-- HEADER -->
+<!-- HEADER CON LOGOUT -->
 <div id="app-header" class="header" style="display:none;">
-    <div style="font-weight: 900; letter-spacing: -1px;">S.U.V.F. <span id="ui-id" style="color:var(--accent); font-size:0.7rem; margin-left:10px;"></span></div>
-    <select id="lang-select" onchange="translateSite()" style="border:none; background:var(--gray); padding:5px 10px; border-radius:10px; font-weight:800;">
-        <option value="it">🇮🇹 IT</option>
-        <option value="en">🇬🇧 EN</option>
-        <option value="es">🇪🇸 ES</option>
-        <option value="fr">🇫🇷 FR</option>
-    </select>
+    <div style="font-weight: 900; letter-spacing: -1px;">
+        S.U.V.F. <span id="ui-id" style="color:var(--accent); font-size:0.7rem; margin-left:10px;"></span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <select id="lang-select" onchange="translateSite()" style="border:none; background:var(--gray); padding:5px 10px; border-radius:10px; font-weight:800;">
+            <option value="it">🇮🇹 IT</option>
+            <option value="en">🇬🇧 EN</option>
+            <option value="es">🇪🇸 ES</option>
+            <option value="fr">🇫🇷 FR</option>
+        </select>
+        <div onclick="doLogout()" style="cursor:pointer; background:var(--negativo); color:white; padding:5px 12px; border-radius:10px; font-size:0.7rem; font-weight:900;">OUT 🚪</div>
+    </div>
 </div>
 
 <!-- LOGIN SCREEN -->
 <div id="scr-login" class="screen active">
     <div class="auth-container">
         <h1 id="txt-title">S.U.V.F.</h1>
+        
+        <!-- SELETTORE LINGUA INIZIALE -->
+        <div style="margin-bottom: 20px;">
+            <select id="lang-select-login" onchange="syncLang(this)" style="width:100%; padding:12px; border-radius:15px; border:2px solid var(--gray); font-weight:700; background:#f8f9fa;">
+                <option value="it">🇮🇹 Italiano</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="fr">🇫🇷 Français</option>
+            </select>
+        </div>
 
-        <select id="lang-select-login" onchange="syncLang(this)" style="border:2px solid var(--gray); padding:10px; border-radius:12px; font-weight:800; width:100%; margin-bottom:15px;">
-            <option value="it">🇮🇹 Italiano</option>
-            <option value="en">🇬🇧 English</option>
-            <option value="es">🇪🇸 Español</option>
-            <option value="fr">🇫🇷 Français</option>
-        </select>
         <div class="info-box" id="txt-info">
             <b>Benvenuto nel Sistema Universale Valutazione Frutti.</b><br>
-            Usa gli slider per impostare il Valore (0-100) e il Peso (importanza) di ogni parametro. Usa il tasto <b>NEGATIVO</b> per i difetti (es. fibrosità eccessiva). Il sistema calcolerà l'indice di perfezione botanica.
+            Usa gli slider per impostare il Valore (0-100) e il Peso (importanza) di ogni parametro. Il sistema calcolerà l'indice di perfezione botanica.
         </div>
+
         <input type="text" id="user-input" placeholder="ID Analista / Username" style="width:100%; padding:15px; border-radius:15px; border:2px solid var(--gray); margin-bottom:15px; font-weight:700; text-align:center;">
+        
         <label style="display:block; margin-bottom:20px; font-size:0.8rem; font-weight:700; color:#555;">
             <input type="checkbox" id="remember-me"> <span id="txt-rem">Rimani Loggato</span>
         </label>
+        
         <button class="save-btn" style="width:100%; padding:18px;" onclick="doLogin()" id="txt-login-btn">LOG IN / ACCEDI</button>
     </div>
 </div>
@@ -726,7 +738,48 @@ function nav(id, el) {
     if(id === 'grafico') updateRadar();
     if(id === 'classifiche') updateRankings();
 }
+// Forza la traduzione e sincronizza i due menu a tendina
+function syncLang(el) {
+    const val = el.value;
+    document.getElementById('lang-select').value = val;
+    translateSite(); // Questa funzione ora cambierà anche il testo di benvenuto
+}
 
+// Funzione Log In corretta
+function doLogin() {
+    const input = document.getElementById('user-input');
+    const val = input.value.trim();
+    
+    if(!val) {
+        alert("Inserisci un ID Analista!");
+        return;
+    }
+
+    currentUser = val.replace(/[^a-zA-Z0-9]/g, '_');
+    
+    if(document.getElementById('remember-me').checked) {
+        localStorage.setItem('suvf_user', currentUser);
+    }
+
+    // Mostra l'app
+    document.getElementById('scr-login').classList.remove('active');
+    document.getElementById('scr-vota').classList.add('active');
+    document.getElementById('app-header').style.display = 'flex';
+    document.getElementById('ui-nav').style.display = 'flex';
+    document.getElementById('ui-scorebar').style.display = 'flex';
+    document.getElementById('ui-id').innerText = currentUser.toUpperCase();
+    
+    renderParams();
+    updateRankings();
+}
+
+// Funzione Log Out
+function doLogout() {
+    if(confirm("Vuoi uscire?")) {
+        localStorage.removeItem('suvf_user');
+        window.location.reload();
+    }
+}
 function updateRadar() {
     const style = getComputedStyle(document.body);
     const coloriCategorie = [
@@ -1029,13 +1082,6 @@ function applyToSliders(params) {
         document.getElementById(`w-sli-${i}`).value = params[i].w;
     }
     calc(); 
-}
-function logout() {
-    if(confirm("Vuoi uscire dall'account?")) {
-        firebase.auth().signOut().then(() => {
-            window.location.reload(); // Ricarica la pagina per tornare al login
-        });
-    }
 }
 function filterFruits() {
     const inputStr = document.getElementById('fruit-search').value.toLowerCase().trim();

@@ -190,7 +190,7 @@ const FRUIT_LIST = [
 ]
 
 const DESCRIZIONI = {
-    "Brix (Dolce)": "Quanto é dolce? (Es. Avocado 0; Dattero 100).",
+    "Brix": "Quanto é dolce? (Es. Avocado 0; Dattero 100).",
     "Acidità": "Sinistra: per niente acido; Destra: incredibilmente acido (Limone).",
     "Intensità": "Potenza del sapore. Sinistra: poco saporito; Destra: intensissimo.",
     "Amarezza": "Sinistra: per niente amaro; Destra: amarissimo.",
@@ -237,8 +237,32 @@ const PARAMS = [
 // --- LOGICA CORE ---
 
 window.onload = () => {
+    // 1. Gestione Login Automatico
     const savedUser = localStorage.getItem('suvf_user');
-    if(savedUser) { document.getElementById('user-input').value = savedUser; doLogin(); }
+    if (savedUser) {
+        const userInput = document.getElementById('user-input');
+        if (userInput) userInput.value = savedUser;
+        doLogin();
+    }
+
+    // 2. Popolamento Suggeritore (Datalist) per la ricerca frutti
+    const dl = document.getElementById('fruit-db');
+    if (dl) {
+        dl.innerHTML = ""; // Pulisce eventuali residui
+        
+        // Ordina la lista alfabeticamente e crea le opzioni
+        const sortedFruits = [...FRUIT_LIST].sort((a, b) => a.localeCompare(b));
+        
+        sortedFruits.forEach(frutto => {
+            const option = document.createElement('option');
+            option.value = frutto;
+            dl.appendChild(option);
+        });
+    }
+
+    // 3. Inizializzazione Grafico (se necessario al caricamento)
+    if (typeof initChart === "function") initChart();
+};
     
     const dl = document.getElementById('fruit-db');
     FRUIT_LIST.sort().forEach(f => dl.innerHTML += `<option value="${f}">`);
@@ -326,20 +350,24 @@ function toggleNeg(i) {
 }
 
 function validateSelection() {
-    const val = document.getElementById('fruit-search').value;
-    const btn = document.getElementById('btn-save-final');
     const input = document.getElementById('fruit-search');
+    const btn = document.getElementById('btn-save-final');
+    const userVal = input.value.trim().toLowerCase(); // Quello che scrive l'utente in minuscolo
     
-    if(FRUIT_LIST.includes(val)) {
+    // Cerca se esiste un frutto nella lista che corrisponde (ignorando le maiuscole)
+    const match = FRUIT_LIST.find(f => f.toLowerCase() === userVal);
+
+    if (match) {
         input.className = "main-search valid";
+        input.value = match; // Corregge automaticamente (es. da "mela" a "Mela")
         btn.disabled = false;
-        currentFruitSelection = val;
+        currentFruitSelection = match;
     } else {
         input.className = "main-search invalid";
         btn.disabled = true;
+        currentFruitSelection = "";
     }
 }
-
 function calc() {
     let total = 0;
     for(let i=0; i<35; i++) {
@@ -365,29 +393,81 @@ function nav(id, el) {
 }
 
 function updateRadar() {
-    const labels = []; const data = [];
+    // 1. Recupero i colori reali dal CSS
+    const style = getComputedStyle(document.body);
+    const coloriCategorie = [
+        style.getPropertyValue('--c-gusto').trim() || '#ff5252',
+        style.getPropertyValue('--c-meccanica').trim() || '#4caf50',
+        style.getPropertyValue('--c-psiche').trim() || '#2196f3',
+        style.getPropertyValue('--c-logistica').trim() || '#ff9800'
+    ];
+
+    const labels = []; 
+    const data = [];
+    const pointColors = []; // Array per i colori dei singoli punti
     let i = 0;
-    PARAMS.forEach(g => g.fields.forEach(f => {
-        labels.push(f);
-        data.push(document.getElementById(`v-sli-${i}`).value);
-        i++;
-    }));
+
+    // 2. Mappatura dati e colori
+    PARAMS.forEach((g, gIdx) => {
+        g.fields.forEach(f => {
+            labels.push(f);
+            const val = document.getElementById(`v-sli-${i}`).value;
+            data.push(val);
+            // Associa il colore della categoria (gIdx) a questo parametro
+            pointColors.push(coloriCategorie[gIdx]);
+            i++;
+        });
+    });
     
+    // 3. Selezione del canvas (assicurati che l'ID nell'HTML sia 'radarChart')
     const ctx = document.getElementById('radarChart').getContext('2d');
-    if(chartInstance) chartInstance.destroy();
-    chartInstance = new Chart(ctx, {
+    
+    // 4. Gestione istanza esistente
+    if(window.chartInstance) window.chartInstance.destroy();
+    
+    // 5. Creazione nuovo Radar colorato
+    window.chartInstance = new Chart(ctx, {
         type: 'radar',
         data: {
             labels: labels,
             datasets: [{
-                label: currentFruitSelection || 'Analisi',
+                label: currentFruitSelection || 'Analisi S.U.V.F.',
                 data: data,
-                backgroundColor: 'rgba(240, 98, 146, 0.2)',
-                borderColor: '#f06292',
-                borderWidth: 2
+                backgroundColor: 'rgba(240, 98, 146, 0.1)', // Sfondo area leggero
+                borderColor: '#f06292',                      // Linea principale
+                borderWidth: 2,
+                pointBackgroundColor: pointColors,           // Punti colorati per categoria
+                pointBorderColor: '#fff',                    // Bordo punti bianco
+                pointBorderWidth: 1,
+                pointRadius: 4
             }]
         },
-        options: { scales: { r: { min: 0, max: 100, ticks: { display: false } } } }
+        options: { 
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { 
+                r: { 
+                    min: 0, 
+                    max: 100, 
+                    ticks: { display: false, stepSize: 20 },
+                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    angleLines: { color: 'rgba(0,0,0,0.1)' },
+                    pointLabels: {
+                        // Colora il testo dei parametri (Brix, Acidità...) 
+                        color: (context) => {
+                            return pointColors[context.index] || '#666';
+                        },
+                        font: {
+                            size: 10,
+                            weight: 'bold'
+                        }
+                    }
+                } 
+            },
+            plugins: {
+                legend: { display: false } // Nascondiamo la legenda per pulizia
+            }
+        }
     });
 }
 

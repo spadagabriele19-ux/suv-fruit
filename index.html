@@ -147,6 +147,15 @@
         <button class="save-btn" style="width:100%; padding:18px;" onclick="doLogin()" id="txt-login-btn">LOG IN / ACCEDI</button>
     </div>
 </div>
+    <div id="app-header" class="header" style="display:none;">
+    <div style="font-weight: 900; letter-spacing: -1px;">S.U.V.F. <span id="ui-id" style="color:var(--accent); font-size:0.7rem; margin-left:10px;"></span></div>
+    <select id="lang-select" onchange="translateSite()" style="border:none; background:var(--gray); padding:5px 10px; border-radius:10px; font-weight:800;">
+        <option value="it">🇮🇹 IT</option>
+        <option value="en">🇬🇧 EN</option>
+        <option value="es">🇪🇸 ES</option>
+        <option value="fr">🇫🇷 FR</option>
+    </select>
+</div>
 
 <!-- VOTA SCREEN -->
 <div id="scr-vota" class="screen">
@@ -556,6 +565,31 @@ window.onload = () => {
         });
     }
 };
+
+const UI_STRINGS = {
+    it: { title: "S.U.V.F.", info: "Benvenuto nel Sistema Universale...", loginBtn: "LOG IN / ACCEDI", searchPh: "CERCA FRUTTO...", personal: "PERSONALE", global: "GLOBALE", saveBtn: "SALVA ANALISI", rem: "Rimani Loggato" },
+    en: { title: "U.F.E.S.", info: "Welcome to the Universal Fruit Evaluation System...", loginBtn: "LOG IN / SIGN IN", searchPh: "SEARCH FRUIT...", personal: "PERSONAL", global: "GLOBAL", saveBtn: "SAVE ANALYSIS", rem: "Remember Me" },
+    es: { title: "S.U.E.F.", info: "Bienvenido al Sistema Universal de Evaluación...", loginBtn: "ENTRAR / ACCEDER", searchPh: "BUSCAR FRUTA...", personal: "PERSONAL", global: "GLOBAL", saveBtn: "GUARDAR", rem: "Recordarme" },
+    fr: { title: "S.U.É.F.", info: "Bienvenue dans le Système Universel d'Évaluation...", loginBtn: "CONNEXION", searchPh: "RECHERCHER UN FRUIT...", personal: "PERSONNEL", global: "GLOBAL", saveBtn: "ENREGISTRER", rem: "Rester connecté" }
+};
+
+function translateSite() {
+    const lang = document.getElementById('lang-select').value;
+    const s = UI_STRINGS[lang];
+
+    // Traduzione elementi fissi
+    document.getElementById('txt-title').innerText = s.title;
+    document.getElementById('txt-info').innerHTML = s.info;
+    document.getElementById('txt-login-btn').innerText = s.loginBtn;
+    document.getElementById('fruit-search').placeholder = s.searchPh;
+    document.getElementById('txt-rank-p').innerText = s.personal;
+    document.getElementById('txt-rank-g').innerText = s.global;
+    document.getElementById('btn-save-final').innerText = s.saveBtn;
+    document.getElementById('txt-rem').innerText = s.rem;
+
+    // Se i parametri sono già stati renderizzati, li rigeneriamo per tradurre i nomi
+    if (currentUser) renderParams(); 
+}
 
 function doLogin() {
     // Prende l'ID dall'input giusto (user-input)
@@ -1020,6 +1054,31 @@ function filterFruits() {
         listContainer.appendChild(div);
     });
 }
+function validateSelection() {
+    const input = document.getElementById('fruit-search');
+    const btn = document.getElementById('btn-save-final');
+    const userVal = input.value.trim().toLowerCase();
+    
+    // Cerca tra i nomi italiani o tra le traduzioni
+    let foundFruit = FRUIT_LIST.find(f => f.toLowerCase() === userVal);
+    
+    if (!foundFruit) {
+        // Se non lo trova in italiano, cerca nel dizionario traduzioni
+        foundFruit = FRUIT_TRANSLATIONS[userVal];
+    }
+
+    if (foundFruit) {
+        input.className = "main-search valid";
+        input.value = foundFruit; // Forza il nome in Italiano per il Database
+        currentFruitSelection = foundFruit;
+        btn.disabled = false;
+    } else {
+        input.className = "main-search invalid";
+        btn.disabled = true;
+        currentFruitSelection = "";
+    }
+}
+
 </script>
 </body>
 </html>

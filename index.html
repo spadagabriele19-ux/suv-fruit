@@ -173,6 +173,7 @@
     <div class="nav-item active" onclick="nav('vota', this)">VOTA</div>
     <div class="nav-item" onclick="nav('grafico', this)">GRAFICO</div>
     <div class="nav-item" onclick="nav('classifiche', this)">CLASSIFICHE</div>
+    <div class="nav-item" onclick="nav('algoritmo', this)">LOGICA</div>
 </div>
 
 <script>
@@ -356,10 +357,18 @@ function calc() {
 }
 
 function nav(id, el) {
+    // Nasconde tutti gli schermi e spegne i tasti
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById('scr-'+id).classList.add('active');
-    el.classList.add('active');
+    
+    // Attiva lo schermo giusto e il tasto cliccato
+    const targetScreen = document.getElementById('scr-' + id);
+    if (targetScreen) {
+        targetScreen.classList.add('active');
+        el.classList.add('active');
+    }
+
+    // Aggiornamenti specifici
     if(id === 'grafico') updateRadar();
     if(id === 'classifiche') updateRankings();
 }

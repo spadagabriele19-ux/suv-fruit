@@ -4,22 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>S.U.V.F. | Sistema Universale Valutazione Frutti</title>
-    
     <!-- Core Libraries -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
         :root {
             --bg: #fffcfd; --accent: #f06292; --dark: #1a237e; --white: #ffffff;
             --negativo: #ff1744; --gray: #eceff1;
             --c-gusto: #ffb7b2; --c-meccanica: #b2e2f2; --c-psiche: #f2b2e2; --c-logistica: #ffdfba;
         }
-
         * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background: var(--bg); margin: 0; padding-bottom: 80px ; color: #333; }
-
+        body { background: var(--bg); margin: 0; padding-bottom: 80px; color: #333; }
+        
         /* Login & Info */
         .auth-container { max-width: 500px; margin: 40px auto; padding: 30px; background: white; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; }
         .info-box { background: #f8f9fa; padding: 20px; border-radius: 20px; font-size: 0.9rem; margin-bottom: 25px; text-align: left; line-height: 1.5; border-left: 5px solid var(--accent); }
@@ -35,88 +32,51 @@
         .main-search { width: 100%; padding: 20px; border-radius: 20px; border: 3px solid var(--gray); font-size: 1.1rem; font-weight: 700; outline: none; transition: 0.3s; }
         .main-search.valid { border-color: #4caf50; background: #f1f8e9; }
         .main-search.invalid { border-color: var(--negativo); }
-
+        
         /* Grid System */
         .group-title { padding: 12px 20px; border-radius: 12px; margin: 25px 0 15px; font-weight: 900; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
         .params-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; }
         .card { background: white; padding: 20px; border-radius: 25px; border-left: 10px solid var(--gray); position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
         .card.is-negative { border-left-color: var(--negativo) !important; background: #fff8f8; }
-
-        #params-container {
-    padding-bottom: 350px !important; /* Spazio per scrollare oltre il banner nero */
-}
-
         
+        #params-container { padding-bottom: 350px !important; }
         .neg-btn { position: absolute; top: 15px; right: 15px; font-size: 0.6rem; font-weight: 900; padding: 5px 10px; border-radius: 8px; background: var(--gray); cursor: pointer; transition: 0.3s; }
         .neg-btn.active { background: var(--negativo); color: white; }
-
         .slider-row { margin-top: 15px; }
         .label-row { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 800; color: #78909c; margin-bottom: 5px; }
         .label-row span { color: var(--accent); }
         input[type=range] { width: 100%; accent-color: var(--accent); cursor: pointer; }
-
+        
         /* Score Bar */
         .floating-score { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 600px; background: #263238; color: white; padding: 18px 30px; border-radius: 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1100; }
         .score-num { font-size: 2.2rem; font-weight: 900; }
         .save-btn { background: var(--accent); border: none; color: white; padding: 12px 25px; border-radius: 15px; font-weight: 800; cursor: pointer; }
         .save-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
+        
         /* Lists */
-        .rank-box { background: white; padding: 20px; border-radius: 25px; margin-bottom: 20px; border: 1px solid var(--gray); }
+        .rank-box { background: white; padding: 18px; border-radius: 22px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid #f0f0f0; transition: all 0.2s ease; cursor: pointer; }
+        .rank-box:active { transform: scale(0.98); background: #fafafa; }
         .rank-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; font-weight: 700; }
         .rank-item:last-child { border: none; }
-
+        
         .screen { display: none; padding: 20px; animation: fadeIn 0.3s; }
         .screen.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-/* Stile per le schede della classifica (Personale e Globale) */
-.rank-box {
-    background: white;
-    padding: 18px;
-    border-radius: 22px;
-    margin-bottom: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    border: 1px solid #f0f0f0;
-    transition: all 0.2s ease;
-}
-
-/* Effetto al tocco sulle schede */
-.rank-box:active {
-    transform: scale(0.98);
-    background: #fafafa;
-}
-
-/* Stile del cestino */
-.delete-btn {
-    color: #ff3b30; /* Rosso iOS */
-    padding: 10px;
-    font-size: 1.2rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Tasto Partecipanti */
-.participants-link {
-    text-transform: uppercase;
-    font-size: 0.65rem;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    color: var(--dark);
-    background: #f0f0f0;
-    padding: 4px 10px;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-/* Badge del numero votanti nella media globale */
-.voters-count {
-    font-size: 0.7rem;
-    color: #8e8e93;
-    font-weight: 500;
-}
         
+        .delete-btn { color: #ff3b30; padding: 10px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .participants-link { text-transform: uppercase; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.5px; color: var(--dark); background: #f0f0f0; padding: 4px 10px; border-radius: 10px; cursor: pointer; }
+        .voters-count { font-size: 0.7rem; color: #8e8e93; font-weight: 500; }
+        
+        /* Modal */
+        .modal-overlay { position: fixed; top:0; left:0; width: 100%; height:100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 30px; position: relative; animation: slideUp 0.3s ease; }
+        .close-x { position: absolute; top: 15px; right: 20px; font-size: 2rem; color: #ccc; cursor: pointer; }
+        .modal-score-circle { width: 80px; height: 80px; border-radius: 50%; background: var(--accent); color: white; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; }
+        .modal-footer { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-modifica { background: var(--dark); color: white; flex: 1; padding: 12px; border-radius: 15px; text-align:center; font-weight:bold; cursor: pointer; }
+        .btn-elimina { background: #ff3b30; color: white; flex: 1; padding: 12px; border-radius: 15px; text-align:center; font-weight:bold; cursor: pointer; }
+        .btn-partecipanti { background: #f0f0f0; color: var(--dark); flex: 1; padding: 12px; border-radius: 15px; text-align:center; font-weight:bold; cursor: pointer; }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -127,43 +87,40 @@
         S.U.V.F. <span id="ui-id" style="color:var(--accent); font-size:0.7rem; margin-left:10px;"></span>
     </div>
     <div style="display: flex; align-items: center; gap: 10px;">
-        <select id="lang-select" onchange="translateSite()" style="border:none; background:var(--gray); padding:5px 10px; border-radius:10px; font-weight:800;">
+        <select id="lang-select" onchange="syncLang(this)" style="border:none; background:var(--gray); padding:5px 10px; border-radius: 10px; font-weight:800;">
             <option value="it">🇮🇹 IT</option>
             <option value="en">🇬🇧 EN</option>
             <option value="es">🇪🇸 ES</option>
             <option value="fr">🇫🇷 FR</option>
         </select>
-        <div onclick="doLogout()" style="cursor:pointer; background:var(--negativo); color:white; padding:5px 12px; border-radius:10px; font-size:0.7rem; font-weight:900;">OUT 🚪</div>
+        <div onclick="doLogout()" style="cursor:pointer; background:var(--negativo); color:white; padding:5px 12px; border-radius: 10px; font-size:0.7rem; font-weight:900;">OUT 🚪</div>
     </div>
 </div>
+
 <!-- LOGIN SCREEN -->
 <div id="scr-login" class="screen active">
     <div class="auth-container">
         <h1 id="txt-title">S.U.V.F.</h1>
-        
         <div style="margin-bottom: 20px;">
-            <select id="lang-select-login" onchange="syncLang(this)" style="width:100%; padding:12px; border-radius:15px; border:2px solid var(--gray); font-weight:700; background:#f8f9fa;">
+            <select id="lang-select-login" onchange="syncLang(this)" style="width:100%; padding: 12px; border-radius: 15px; border:2px solid var(--gray); font-weight:700; background:#f8f9fa;">
                 <option value="it">🇮🇹 Italiano</option>
                 <option value="en">🇬🇧 English</option>
                 <option value="es">🇪🇸 Español</option>
                 <option value="fr">🇫🇷 Français</option>
             </select>
         </div>
-
         <div class="info-box" id="txt-info">
             <b>Benvenuto nel Sistema Universale Valutazione Frutti.</b><br>
             Usa gli slider per impostare il Valore (0-100) e il Peso (importanza) di ogni parametro. Il sistema calcolerà l'indice di perfezione botanica.
         </div>
-
-        <input type="text" id="user-input" placeholder="ID Analista / Username" style="width:100%; padding:15px; border-radius:15px; border:2px solid var(--gray); margin-bottom:15px; font-weight:700; text-align:center;">
-        
+        <input type="text" id="user-input" placeholder="ID Analista / Username" style="width:100%; padding: 15px; border-radius: 15px; border:2px solid var(--gray); margin-bottom: 15px; font-weight:700; text-align:center;">
         <label style="display:block; margin-bottom:20px; font-size:0.8rem; font-weight:700; color:#555;">
             <input type="checkbox" id="remember-me"> <span id="txt-rem">Rimani Loggato</span>
         </label>
-        
-        <button class="save-btn" style="width:100%; padding:18px;" onclick="doLogin()" id="txt-login-btn">LOG IN / ACCEDI</button>
+        <button class="save-btn" style="width:100%; padding: 18px;" onclick="doLogin()" id="txt-login-btn">LOG IN / ACCEDI</button>
     </div>
 </div>
+
 <!-- VOTA SCREEN -->
 <div id="scr-vota" class="screen">
     <div class="search-wrap">
@@ -172,87 +129,68 @@
     </div>
     <div id="params-container"></div>
 </div>
-    
+
 <!-- GRAFICO SCREEN -->
 <div id="scr-grafico" class="screen" style="padding: 10px;">
-    <h2 style="font-weight:900; text-align:center; color:#333; margin-bottom:15px;">SPIDER CHART</h2>
-    
-    <!-- Contenitore ottimizzato -->
-    <div style="background:white; padding:15px; border-radius:30px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); height: 70vh; min-height: 500px; position: relative;">
+    <h2 style="font-weight:900; text-align:center; color:#333; margin-bottom: 15px;">SPIDER CHART</h2>
+    <div style="background:white; padding: 15px; border-radius: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); height: 70vh; min-height: 500px; position: relative;">
         <canvas id="radarChart"></canvas>
     </div>
-
-    <!-- Questo div serve a "spingere" il contenuto sopra la nav-bar -->
     <div style="height: 120px;"></div>
 </div>
-    
+
 <!-- CLASSIFICHE SCREEN -->
 <div id="scr-classifiche" class="screen">
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
         <div>
             <h3 id="txt-rank-p" style="font-weight:900;">PERSONALE</h3>
-            <div id="list-pers" class="rank-box"></div>
+            <div id="list-pers"></div>
         </div>
         <div>
             <h3 id="txt-rank-g" style="font-weight:900;">GLOBALE</h3>
-            <div id="list-glob" class="rank-box"></div>
+            <div id="list-glob"></div>
         </div>
     </div>
 </div>
 
-<!-- ALGORITMO SCREEN PULITO -->
+<!-- ALGORITMO SCREEN -->
 <div id="scr-algoritmo" class="screen" style="padding:20px;">
     <h2 style="text-align:center; font-weight:900; color:var(--accent); text-transform:uppercase; letter-spacing:1px;">Logica di Calcolo</h2>
-    
     <div class="card" style="background:white; padding:25px; border-radius:30px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); border:none;">
-        <p style="font-size:0.95rem; line-height:1.6; color:#444;">
-            Il punteggio finale è calcolato analizzando ogni singolo parametro in base all'importanza (Peso) che gli hai assegnato.
-        </p>
-        
+        <p style="font-size:0.95rem; line-height: 1.6; color:#444;">Il punteggio finale è calcolato analizzando ogni singolo parametro in base all'importanza (Peso) che gli hai assegnato.</p>
         <div style="background:#f8f9fa; padding:20px; border-radius:20px; text-align:center; margin:20px 0; border:1px solid #eee;">
             <div style="font-size:0.7rem; color:#888; text-transform:uppercase; font-weight:800; margin-bottom:5px;">Formula S.U.V.F.</div>
-            <b style="font-size:1.3rem; color:var(--dark);">Punti = (Valore × Peso%) × Stato</b>
+            <b style="font-size:1.3rem; color:var(--dark);">Punti = (Valore * Peso%) * Stato</b>
         </div>
-
-        <div style="display:grid; gap:15px; margin-top:20px;">
-            <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:grid; gap: 15px; margin-top:20px;">
+            <div style="display: flex; align-items:center; gap:10px;">
                 <span style="background:var(--accent); color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:bold;">1</span>
                 <div style="font-size:0.85rem;"><b>Valore:</b> L'intensità della caratteristica (0-100).</div>
             </div>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <span style="background:var(--accent); color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:bold;">2</span>
+            <div style="display: flex; align-items:center; gap:10px;">
+                <span style="background:var(--accent); color:white; width:24px; height:24px; border-radius:50%; display: flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:bold;">2</span>
                 <div style="font-size:0.85rem;"><b>Peso:</b> Quanto quel parametro influisce sul totale.</div>
             </div>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <span style="background:var(--accent); color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:bold;">3</span>
+            <div style="display: flex; align-items:center; gap:10px;">
+                <span style="background:var(--accent); color:white; width:24px; height:24px; border-radius:50%; display: flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:bold;">3</span>
                 <div style="font-size:0.85rem;"><b>Stato:</b> Se è <b>Negativo</b>, i punti vengono sottratti.</div>
             </div>
         </div>
-        
-        <hr style="border:0; border-top:1px solid #eee; margin:25px 0;">
-        
+        <hr style="border:0; border-top: 1px solid #eee; margin:25px 0;">
         <h4 style="font-weight:900; font-size:0.8rem; text-transform:uppercase; color:#888;">Esempio Pratico</h4>
-        <p style="font-size:0.85rem; color:#666; font-style:italic;">
-            "Se la <b>Dolcezza</b> ha valore 80 ma il peso è solo al 50%, il contributo sarà di +40 punti. Se è un difetto, sarà -40."
-        </p>
-    </div>
-        <!-- AGGIUNTA LOGICA GLOBALE -->
-        <hr style="border:0; border-top:1px solid #eee; margin:25px 0;">
-        <h4 style="font-weight:900; font-size:0.8rem; text-transform:uppercase; color:var(--accent);">Media Globale Collettiva</h4>
-        <p style="font-size:0.85rem; color:#444; line-height:1.5;">
-            Il rating globale non è una semplice media dei punteggi finali. <br><br>
-            Per ogni frutto, il sistema calcola la <b>Media Matematica di ognuno dei 35 parametri</b> votati da tutti gli utenti. <br><br>
-            Viene poi applicata la formula S.U.V.F. su questi valori medi. Questo garantisce che il risultato rifletta fedelmente l'opinione collettiva su ogni singola sfumatura del frutto.
-        </p>
+        <p style="font-size:0.85rem; color:#666; font-style:italic;">"Se la <b>Dolcezza</b> ha valore 80 ma il peso è solo al 50%, il contributo sarà di +40 punti. Se è un difetto, sarà -40."</p>
     </div>
     
-    <div style="height:150px;"></div> 
+    <hr style="border:0; border-top: 1px solid #eee; margin:25px 0;">
+    <h4 style="font-weight:900; font-size:0.8rem; text-transform:uppercase; color:var(--accent);">Media Globale Collettiva</h4>
+    <p style="font-size:0.85rem; color:#444; line-height:1.5;">
+        Il rating globale non è una semplice media dei punteggi finali. <br><br>
+        Per ogni frutto, il sistema calcola la <b>Media Matematica di ognuno dei 35 parametri</b> votati da tutti gli utenti. <br><br>
+        Viene poi applicata la formula S.U.V.F. su questi valori medi. Questo garantisce che il risultato rifletta fedelmente l'opinione collettiva su ogni singola sfumatura del frutto.
+    </p>
+    <div style="height: 150px;"></div>
 </div>
-    
-    
-    <div style="height:150px;"></div> 
-</div>
-    
+
 <!-- NAV & SCOREBAR -->
 <div id="ui-scorebar" class="floating-score" style="display:none;">
     <div>
@@ -269,231 +207,198 @@
     <div class="nav-item" onclick="nav('algoritmo', this)">LOGICA</div>
 </div>
 
+<!-- MODAL FRUIT -->
 <div id="modal-fruit" class="modal-overlay" style="display:none;">
     <div class="modal-content">
         <span class="close-x" onclick="closeModal()">×</span>
         <h2 id="modal-title" style="text-align:center; margin-bottom:5px;"></h2>
-        <div id="modal-subtitle" style="text-align:center; font-size:0.8rem; color:#888; margin-bottom:15px;"></div>
-        
+        <div id="modal-subtitle" style="text-align:center; font-size:0.8em; color:#888; margin-bottom:15px;"></div>
         <div class="modal-score-circle">
             <span id="modal-score-val">0</span>
             <small>SUV-F</small>
         </div>
-
-        <div style="width:100%; height:250px; margin: 20px 0;">
+        <div style="width: 100%; height:250px; margin: 20px 0;">
             <canvas id="modalChart"></canvas>
         </div>
-
-        <div id="modal-actions" class="modal-footer">
-            </div>
+        <div id="modal-actions" class="modal-footer"></div>
     </div>
 </div>
-<style>
-.modal-overlay {
-    position: fixed; top:0; left:0; width:100%; height:100%;
-    background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
-    z-index: 2000; display: flex; align-items: center; justify-content: center;
-}
-.modal-content {
-    background: white; width: 90%; max-width: 400px; padding: 25px;
-    border-radius: 30px; position: relative; animation: slideUp 0.3s ease;
-}
-.close-x {
-    position: absolute; top: 15px; right: 20px; font-size: 2rem; 
-    color: #ccc; cursor: pointer;
-}
-.modal-score-circle {
-    width: 80px; height: 80px; border-radius: 50%; background: var(--accent);
-    color: white; margin: 0 auto; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; font-weight: 900;
-}
-.modal-footer { display: flex; gap: 10px; margin-top: 20px; }
-.btn-modifica { background: var(--dark); color: white; flex: 1; padding: 12px; border-radius: 15px; text-align:center; font-weight:bold; }
-.btn-elimina { background: #ff3b30; color: white; flex: 1; padding: 12px; border-radius: 15px; text-align:center; font-weight:bold; }
-.btn-partecipanti { background: #f0f0f0; color: var(--dark); flex: 1; padding: 12px; border-radius: 15px; text-align:center; font-weight:bold; }
-
-@keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-</style>
 
 <script>
-
-    // 1. Il tuo Array completo (ho abbreviato per l'esempio, incolla il tuo integrale)
+// 1. Array completo corretto
 const FRUIT_DATA = [
-  { "it": "Albicocca", "en": "Apricot", "fr": "Abricot", "es": "Albaricoque" },
-  { "it": "Alchechengi", "en": "Physalis", "fr": "Alkékenge", "es": "Alquequenje" },
-  { "it": "Amarena", "en": "Sour cherry", "fr": "Griotte", "es": "Guinda" },
-  { "it": "Ananas", "en": "Pineapple", "fr": "Ananas", "es": "Piña" },
-  { "it": "Anacardo", "en": "Cashew apple", "fr": "Pomme cajou", "es": "Anacardo" },
-  { "it": "Anguria", "en": "Watermelon", "fr": "Pastèque", "es": "Sandía" },
-  { "it": "Annona", "en": "Custard apple", "fr": "Annone", "es": "Chirimoya" },
-  { "it": "Arancia", "en": "Orange", "fr": "Orange", "es": "Naranja" },
-  { "it": "Arancia Amara", "en": "Bitter orange", "fr": "Orange amère", "es": "Naranja amarga" },
-  { "it": "Arancia Bionda", "en": "Sweet orange", "fr": "Orange blonde", "es": "Naranja blanca" },
-  { "it": "Arancia Rossa", "en": "Blood orange", "fr": "Orange sanguine", "es": "Naranja sanguínea" },
-  { "it": "Arancio Trifogliato", "en": "Trifoliate orange", "fr": "Citronnier épineux", "es": "Naranjo trifoliado" },
-  { "it": "Aronia", "en": "Chokeberry", "fr": "Aronia", "es": "Aronia" },
-  { "it": "Avocado", "en": "Avocado", "fr": "Avocat", "es": "Aguacate" },
-  { "it": "Azzeruolo", "en": "Azarole", "fr": "Azérole", "es": "Acerola" },
-  { "it": "Babaco", "en": "Babaco", "fr": "Babaco", "es": "Babaco" },
-  { "it": "Bananito", "en": "Baby banana", "fr": "Frécinette", "es": "Banano dátil" },
-  { "it": "Banana", "en": "Banana", "fr": "Banane", "es": "Plátano" },
-  { "it": "Bergamotto", "en": "Bergamot", "fr": "Bergamote", "es": "Bergamota" },
-  { "it": "Biricoccolo", "en": "Purple apricot", "fr": "Abricot-prune", "es": "Albaricoque púrpura" },
-  { "it": "Caco", "en": "Persimmon", "fr": "Kaki", "es": "Caqui" },
-  { "it": "Calamandino", "en": "Calamondin", "fr": "Calamondin", "es": "Calamondín" },
-  { "it": "Carruba", "en": "Carob", "fr": "Caroube", "es": "Algarroba" },
-  { "it": "Carambola", "en": "Star fruit", "fr": "Carambole", "es": "Carambola" },
-  { "it": "Castagna", "en": "Chestnut", "fr": "Châtaigne", "es": "Castaña" },
-  { "it": "Cedro", "en": "Citron", "fr": "Cédrat", "es": "Cidra" },
-  { "it": "Ciliegia", "en": "Cherry", "fr": "Cerise", "es": "Cereza" },
-  { "it": "Chinotto", "en": "Chinotto", "fr": "Chinotto", "es": "Chinotto" },
-  { "it": "Clementina", "en": "Clementine", "fr": "Clémentine", "es": "Clementina" },
-  { "it": "Cocco", "en": "Coconut", "fr": "Noix de coco", "es": "Coco" },
-  { "it": "Cocomero", "en": "Watermelon", "fr": "Pastèque", "es": "Sandía" },
-  { "it": "Cocomero Asinino", "en": "Squirting cucumber", "fr": "Concombre d'âne", "es": "Pepinillo del diablo" },
-  { "it": "Corbezzolo", "en": "Strawberry tree fruit", "fr": "Arbouse", "es": "Madroño" },
-  { "it": "Corniolo", "en": "Cornelian cherry", "fr": "Cornouille", "es": "Cornejo" },
-  { "it": "Cotogna", "en": "Quince", "fr": "Coing", "es": "Membrillo" },
-  { "it": "Crespino", "en": "Barberry", "fr": "Épine-vinette", "es": "Berberis" },
-  { "it": "Curuba", "en": "Banana passionfruit", "fr": "Curuba", "es": "Curuba" },
-  { "it": "Dattero", "en": "Date", "fr": "Datte", "es": "Dátil" },
-  { "it": "Dattero Cinese", "en": "Jujube", "fr": "Jujube", "es": "Azufaifa" },
-  { "it": "Durian", "en": "Durian", "fr": "Durian", "es": "Durión" },
-  { "it": "Fagiolo Cornetto", "en": "String bean", "fr": "Haricot vert", "es": "Judía verde" },
-  { "it": "Feijoa", "en": "Feijoa", "fr": "Feijoa", "es": "Feijoa" },
-  { "it": "Fico", "en": "Fig", "fr": "Figue", "es": "Higo" },
-  { "it": "Fico d'India", "en": "Prickly pear", "fr": "Figue de Barbarie", "es": "Tuna" },
-  { "it": "Fico degli Ottentotti", "en": "Hottentot fig", "fr": "Figue des Hottentots", "es": "Bálsamo" },
-  { "it": "Fragola", "en": "Strawberry", "fr": "Fraise", "es": "Fresa" },
-  { "it": "Fragolina di bosco", "en": "Wild strawberry", "fr": "Fraise des bois", "es": "Fresa silvestre" },
-  { "it": "Frutto della Passione", "en": "Passion fruit", "fr": "Fruit de la passion", "es": "Maracuyá" },
-  { "it": "Frutto del Drago", "en": "Dragon fruit", "fr": "Fruit du dragon", "es": "Pitahaya" },
-  { "it": "Frutto Stella", "en": "Star fruit", "fr": "Carambole", "es": "Carambola" },
-  { "it": "Gelso Bianco", "en": "White mulberry", "fr": "Mûrier blanc", "es": "Mora blanca" },
-  { "it": "Gelso Nero", "en": "Black mulberry", "fr": "Mûrier noir", "es": "Mora negra" },
-  { "it": "Gelso Rosso", "en": "Red mulberry", "fr": "Mûrier rouge", "es": "Mora roja" },
-  { "it": "Giaca", "en": "Jackfruit", "fr": "Jacquier", "es": "Yaca" },
-  { "it": "Giuggiola", "en": "Jujube", "fr": "Jujube", "es": "Azufaifa" },
-  { "it": "Granadilla", "en": "Sweet granadilla", "fr": "Grenadille", "es": "Granadilla" },
-  { "it": "Guava", "en": "Guava", "fr": "Goyave", "es": "Guayaba" },
-  { "it": "Jostaberry", "en": "Jostaberry", "fr": "Casse-ille", "es": "Jostaberry" },
-  { "it": "Kiwi", "en": "Kiwi", "fr": "Kiwi", "es": "Kiwi" },
-  { "it": "Kiwano", "en": "Horned melon", "fr": "Métulon", "es": "Kiwano" },
-  { "it": "Kumquat", "en": "Kumquat", "fr": "Kumquat", "es": "Kumquat" },
-  { "it": "Lampone", "en": "Raspberry", "fr": "Framboise", "es": "Frambuesa" },
-  { "it": "Lampone Giallo", "en": "Yellow raspberry", "fr": "Framboise jaune", "es": "Frambuesa amarilla" },
-  { "it": "Lampone Nero", "en": "Black raspberry", "fr": "Framboise noire", "es": "Frambuesa negra" },
-  { "it": "Litchi", "en": "Lychee", "fr": "Litchi", "es": "Litchi" },
-  { "it": "Limetta", "en": "Lime", "fr": "Lime", "es": "Lima" },
-  { "it": "Limone", "en": "Lemon", "fr": "Citron", "es": "Limón" },
-  { "it": "Limone di Sorrento", "en": "Sorrento lemon", "fr": "Citron de Sorrente", "es": "Limón de Sorrento" },
-  { "it": "Limone di Amalfi", "en": "Amalfi lemon", "fr": "Citron d'Amalfi", "es": "Limón de Amalfi" },
-  { "it": "Limone Cedrato", "en": "Citron-lemon", "fr": "Limon-cédrat", "es": "Limón cidrado" },
-  { "it": "Lulo", "en": "Lulo", "fr": "Lulo", "es": "Naranjilla" },
-  { "it": "Mandarino", "en": "Mandarin", "fr": "Mandarine", "es": "Mandarina" },
-  { "it": "Mandarancio", "en": "Tangerine", "fr": "Tangerine", "es": "Tangrina" },
-  { "it": "Mandorla", "en": "Almond", "fr": "Amande", "es": "Almendra" },
-  { "it": "Mango", "en": "Mango", "fr": "Mangue", "es": "Mango" },
-  { "it": "Mangostano", "en": "Mangosteen", "fr": "Mangoustan", "es": "Mangostán" },
-  { "it": "Mano di Buddha", "en": "Buddha's hand", "fr": "Main de Bouddha", "es": "Mano de Buda" },
-  { "it": "Mapo", "en": "Mapo", "fr": "Mapo", "es": "Mapo" },
-  { "it": "Maracuja", "en": "Passion fruit", "fr": "Fruit de la passion", "es": "Maracuyá" },
-  { "it": "Mela", "en": "Apple", "fr": "Pomme", "es": "Manzana" },
-  { "it": "Mela Cotogna", "en": "Quince", "fr": "Coing", "es": "Membrillo" },
-  { "it": "Mela Campana", "en": "Annurca apple", "fr": "Pomme Annurca", "es": "Manzana Annurca" },
-  { "it": "Mela Rosa", "en": "Rose apple", "fr": "Pomme rose", "es": "Pomarrosa" },
-  { "it": "Melograno", "en": "Pomegranate", "fr": "Grenade", "es": "Granada" },
-  { "it": "Melone", "en": "Melon", "fr": "Melon", "es": "Melón" },
-  { "it": "Melone Cantalupo", "en": "Cantaloupe", "fr": "Cantaloup", "es": "Cantalupo" },
-  { "it": "Melone Retato", "en": "Muskmelon", "fr": "Melon brodé", "es": "Melón reticulado" },
-  { "it": "Melone d'Inverno", "en": "Winter melon", "fr": "Melon d'hiver", "es": "Melón de invierno" },
-  { "it": "Mirtillo Nero", "en": "Bilberry", "fr": "Myrtille", "es": "Arándano" },
-  { "it": "Mirtillo Rosso", "en": "Cranberry", "fr": "Canneberge", "es": "Arándano rojo" },
-  { "it": "Mirtillo Blu", "en": "Blueberry", "fr": "Bleuet", "es": "Arándano azul" },
-  { "it": "Mirtillo Siberiano", "en": "Honeyberry", "fr": "Camerise", "es": "Baya de miel" },
-  { "it": "Mora", "en": "Blackberry", "fr": "Mûre", "es": "Mora" },
-  { "it": "Mora di Rovo", "en": "Wild blackberry", "fr": "Mûre sauvage", "es": "Mora silvestre" },
-  { "it": "Mora di Gelso", "en": "Mulberry", "fr": "Mûre de mûrier", "es": "Mora de morera" },
-  { "it": "Nashi", "en": "Nashi pear", "fr": "Nashi", "es": "Nashi" },
-  { "it": "Nashi (Pera-Mela)", "en": "Asian pear", "fr": "Poire asiatique", "es": "Pera asiática" },
-  { "it": "Nectarina", "en": "Nectarine", "fr": "Brugnon", "es": "Nectarina" },
-  { "it": "Nespola", "en": "Medlar", "fr": "Nèfle", "es": "Níspero" },
-  { "it": "Nespola Comune", "en": "Common medlar", "fr": "Nèfle commune", "es": "Níspero común" },
-  { "it": "Nespola del Giappone", "en": "Loquat", "fr": "Nèfle du Japon", "es": "Níspero japonés" },
-  { "it": "Nocciola", "en": "Hazelnut", "fr": "Noisette", "es": "Avellana" },
-  { "it": "Noce", "en": "Walnut", "fr": "Noix", "es": "Nuez" },
-  { "it": "Noce di Cocco", "en": "Coconut", "fr": "Noix de coco", "es": "Coco" },
-  { "it": "Noce di Pecan", "en": "Pecan", "fr": "Noix de pécan", "es": "Nuez pecana" },
-  { "it": "Noce di Macadamia", "en": "Macadamia nut", "fr": "Noix de macadamia", "es": "Nuez de macadamia" },
-  { "it": "Noce del Brasile", "en": "Brazil nut", "fr": "Noix du Brésil", "es": "Nuez de Brasil" },
-  { "it": "Olive", "en": "Olives", "fr": "Olives", "es": "Aceitunas" },
-  { "it": "Olivello Spinoso", "en": "Sea buckthorn", "fr": "Argousier", "es": "Espino giallo" },
-  { "it": "Papaya", "en": "Papaya", "fr": "Papaye", "es": "Papaya" },
-  { "it": "Passiflora", "en": "Passion flower fruit", "fr": "Passiflore", "es": "Pasionaria" },
-  { "it": "Pera", "en": "Pear", "fr": "Poire", "es": "Pera" },
-  { "it": "Pera Coscia", "en": "Coscia pear", "fr": "Poire Coscia", "es": "Pera Coscia" },
-  { "it": "Pera Mastantuono", "en": "Mastantuono pear", "fr": "Poire Mastantuono", "es": "Pera Mastantuono" },
-  { "it": "Pera Volpina", "en": "Volpina pear", "fr": "Poire Volpina", "es": "Pera Volpina" },
-  { "it": "Pesca", "en": "Peach", "fr": "Pêche", "es": "Melocoton" },
-  { "it": "Pesca Noce", "en": "Nectarine", "fr": "Nectarine", "es": "Nectarina" },
-  { "it": "Pesca Tabacchiera", "en": "Saturn peach", "fr": "Pêche plate", "es": "Paraguayo" },
-  { "it": "Pesca Percoca", "en": "Percoca peach", "fr": "Pavie", "es": "Percoca" },
-  { "it": "Pinolo", "en": "Pine nut", "fr": "Pignon de pin", "es": "Piñón" },
-  { "it": "Pistacchio", "en": "Pistachio", "fr": "Pistache", "es": "Pistacho" },
-  { "it": "Pitaya", "en": "Dragon fruit", "fr": "Pitaya", "es": "Pitahaya" },
-  { "it": "Platano", "en": "Plantain", "fr": "Banane plantain", "es": "Plátano macho" },
-  { "it": "Pompelmo", "en": "Grapefruit", "fr": "Pamplemousse", "es": "Pomelo" },
-  { "it": "Pompelmo Rosa", "en": "Pink grapefruit", "fr": "Pamplemousse rose", "es": "Pomelo rosa" },
-  { "it": "Pomelo", "en": "Pomelo", "fr": "Pomélo", "es": "Pamplemusa" },
-  { "it": "Prugna", "en": "Plum", "fr": "Prune", "es": "Ciruela" },
-  { "it": "Prugnolo", "en": "Sloe", "fr": "Prunelle", "es": "Endrina" },
-  { "it": "Rambutan", "en": "Rambutan", "fr": "Ramboutan", "es": "Rambután" },
-  { "it": "Ribes Nero", "en": "Blackcurrant", "fr": "Cassis", "es": "Groseilla negra" },
-  { "it": "Ribes Rosso", "en": "Redcurrant", "fr": "Groseille", "es": "Groseilla roja" },
-  { "it": "Ribes Bianco", "en": "White currant", "fr": "Groseille blanche", "es": "Groseilla blanca" },
-  { "it": "Rosa Canina", "en": "Rose hip", "fr": "Cynorrhodon", "es": "Escaramujo" },
-  { "it": "Rovo", "en": "Bramble", "fr": "Ronce", "es": "Zarza" },
-  { "it": "Sambuco", "en": "Elderberry", "fr": "Sureau", "es": "Saúco" },
-  { "it": "Sapodilla", "en": "Sapodilla", "fr": "Sapotille", "es": "Zapote" },
-  { "it": "Sorba", "en": "Service tree fruit", "fr": "Corme", "es": "Sorba" },
-  { "it": "Susina", "en": "Plum", "fr": "Prune", "es": "Ciruela" },
-  { "it": "Susina Regina Claudia", "en": "Greengage", "fr": "Reine-claude", "es": "Ciruela Claudia" },
-  { "it": "Tamarindo", "en": "Tamarind", "fr": "Tamarin", "es": "Tamarindo" },
-  { "it": "Tamarillo", "en": "Tamarillo", "fr": "Tamarillo", "es": "Tamarillo" },
-  { "it": "Tangelo", "en": "Tangelo", "fr": "Tangelo", "es": "Tangelo" },
-  { "it": "Ugli", "en": "Ugli fruit", "fr": "Ugli", "es": "Ugli" },
-  { "it": "Uva", "en": "Grape", "fr": "Raisin", "es": "Uva" },
-  { "it": "Uva Spina", "en": "Gooseberry", "fr": "Groseille à maquereau", "es": "Uva espina" },
-  { "it": "Uva Fragola", "en": "Fox grape", "fr": "Raisin framboise", "es": "Uva fresa" },
-  { "it": "Uva di Corinto", "en": "Zante currant", "fr": "Raisin de Corinthe", "es": "Uva de Corinto" },
-  { "it": "Uva Passa", "en": "Raisins", "fr": "Raisins secs", "es": "Pasas" },
-  { "it": "Uva Sultanina", "en": "Sultana", "fr": "Raisin de Smyrne", "es": "Sultanina" },
-  { "it": "Visciola", "en": "Sour cherry", "fr": "Griotte", "es": "Guinda" },
-  { "it": "Zenzero (Frutto)", "en": "Ginger (rhizome)", "fr": "Gingembre", "es": "Jengibre" },
-  { "it": "Zizifo", "en": "Jujube", "fr": "Jujube", "es": "Azufaifa" }
-]
+    { "it": "Albicocca", "en": "Apricot", "fr": "Abricot", "es": "Albaricoque" },
+    { "it": "Alchechengi", "en": "Physalis", "fr": "Alkékenge", "es": "Alquequenje" },
+    { "it": "Amarena", "en": "Sour cherry", "fr": "Griotte", "es": "Guinda" },
+    { "it": "Ananas", "en": "Pineapple", "fr": "Ananas", "es": "Piña" },
+    { "it": "Anacardo", "en": "Cashew apple", "fr": "Pomme cajou", "es": "Anacardo" },
+    { "it": "Anguria", "en": "Watermelon", "fr": "Pastèque", "es": "Sandía" },
+    { "it": "Annona", "en": "Custard apple", "fr": "Annone", "es": "Chirimoya" },
+    { "it": "Arancia", "en": "Orange", "fr": "Orange", "es": "Naranja" },
+    { "it": "Arancia Amara", "en": "Bitter orange", "fr": "Orange amère", "es": "Naranja amarga" },
+    { "it": "Arancia Bionda", "en": "Sweet orange", "fr": "Orange blonde", "es": "Naranja blanca" },
+    { "it": "Arancia Rossa", "en": "Blood orange", "fr": "Orange sanguine", "es": "Naranja sanguínea" },
+    { "it": "Arancio Trifogliato", "en": "Trifoliate orange", "fr": "Citronnier épineux", "es": "Naranjo trifoliado" },
+    { "it": "Aronia", "en": "Chokeberry", "fr": "Aronia", "es": "Aronia" },
+    { "it": "Avocado", "en": "Avocado", "fr": "Avocat", "es": "Aguacate" },
+    { "it": "Azzeruolo", "en": "Azarole", "fr": "Azérole", "es": "Acerola" },
+    { "it": "Babaco", "en": "Babaco", "fr": "Babaco", "es": "Babaco" },
+    { "it": "Bananito", "en": "Baby banana", "fr": "Frécinette", "es": "Banano dátil" },
+    { "it": "Banana", "en": "Banana", "fr": "Banane", "es": "Plátano" },
+    { "it": "Bergamotto", "en": "Bergamot", "fr": "Bergamote", "es": "Bergamota" },
+    { "it": "Biricoccolo", "en": "Purple apricot", "fr": "Abricot-prune", "es": "Albaricoque púrpura" },
+    { "it": "Caco", "en": "Persimmon", "fr": "Kaki", "es": "Caqui" },
+    { "it": "Calamandino", "en": "Calamondin", "fr": "Calamondin", "es": "Calamondín" },
+    { "it": "Carruba", "en": "Carob", "fr": "Caroube", "es": "Algarroba" },
+    { "it": "Carambola", "en": "Star fruit", "fr": "Carambole", "es": "Carambola" },
+    { "it": "Castagna", "en": "Chestnut", "fr": "Châtaigne", "es": "Castaña" },
+    { "it": "Cedro", "en": "Citron", "fr": "Cédrat", "es": "Cidra" },
+    { "it": "Ciliegia", "en": "Cherry", "fr": "Cerise", "es": "Cereza" },
+    { "it": "Chinotto", "en": "Chinotto", "fr": "Chinotto", "es": "Chinotto" },
+    { "it": "Clementina", "en": "Clementine", "fr": "Clémentine", "es": "Clementina" },
+    { "it": "Cocco", "en": "Coconut", "fr": "Noix de coco", "es": "Coco" },
+    { "it": "Cocomero", "en": "Watermelon", "fr": "Pastèque", "es": "Sandía" },
+    { "it": "Cocomero Asinino", "en": "Squirting cucumber", "fr": "Concombre d'âne", "es": "Pepinillo del diablo" },
+    { "it": "Corbezzolo", "en": "Strawberry tree fruit", "fr": "Arbouse", "es": "Madroño" },
+    { "it": "Corniolo", "en": "Cornelian cherry", "fr": "Cornouille", "es": "Cornejo" },
+    { "it": "Cotogna", "en": "Quince", "fr": "Coing", "es": "Membrillo" },
+    { "it": "Crespino", "en": "Barberry", "fr": "Épine-vinette", "es": "Berberis" },
+    { "it": "Curuba", "en": "Banana passionfruit", "fr": "Curuba", "es": "Curuba" },
+    { "it": "Dattero", "en": "Date", "fr": "Datte", "es": "Dátil" },
+    { "it": "Dattero Cinese", "en": "Jujube", "fr": "Jujube", "es": "Azufaifa" },
+    { "it": "Durian", "en": "Durian", "fr": "Durian", "es": "Durión" },
+    { "it": "Fagiolo Cornetto", "en": "String bean", "fr": "Haricot vert", "es": "Judía verde" },
+    { "it": "Feijoa", "en": "Feijoa", "fr": "Feijoa", "es": "Feijoa" },
+    { "it": "Fico", "en": "Fig", "fr": "Figue", "es": "Higo" },
+    { "it": "Fico d'India", "en": "Prickly pear", "fr": "Figue de Barbarie", "es": "Tuna" },
+    { "it": "Fico degli Ottentotti", "en": "Hottentot fig", "fr": "Figue des Hottentots", "es": "Bálsamo" },
+    { "it": "Fragola", "en": "Strawberry", "fr": "Fraise", "es": "Fresa" },
+    { "it": "Fragolina di bosco", "en": "Wild strawberry", "fr": "Fraise des bois", "es": "Fresa silvestre" },
+    { "it": "Frutto della Passione", "en": "Passion fruit", "fr": "Fruit de la passion", "es": "Maracuyá" },
+    { "it": "Frutto del Drago", "en": "Dragon fruit", "fr": "Fruit du dragon", "es": "Pitahaya" },
+    { "it": "Frutto Stella", "en": "Star fruit", "fr": "Carambole", "es": "Carambola" },
+    { "it": "Gelso Bianco", "en": "White mulberry", "fr": "Mûrier blanc", "es": "Mora blanca" },
+    { "it": "Gelso Nero", "en": "Black mulberry", "fr": "Mûrier noir", "es": "Mora negra" },
+    { "it": "Gelso Rosso", "en": "Red mulberry", "fr": "Mûrier rouge", "es": "Mora roja" },
+    { "it": "Giaca", "en": "Jackfruit", "fr": "Jacquier", "es": "Yaca" },
+    { "it": "Giuggiola", "en": "Jujube", "fr": "Jujube", "es": "Azufaifa" },
+    { "it": "Granadilla", "en": "Sweet granadilla", "fr": "Grenadille", "es": "Granadilla" },
+    { "it": "Guava", "en": "Guava", "fr": "Goyave", "es": "Guayaba" },
+    { "it": "Jostaberry", "en": "Jostaberry", "fr": "Casse-ille", "es": "Jostaberry" },
+    { "it": "Kiwi", "en": "Kiwi", "fr": "Kiwi", "es": "Kiwi" },
+    { "it": "Kiwano", "en": "Horned melon", "fr": "Métulon", "es": "Kiwano" },
+    { "it": "Kumquat", "en": "Kumquat", "fr": "Kumquat", "es": "Kumquat" },
+    { "it": "Lampone", "en": "Raspberry", "fr": "Framboise", "es": "Frambuesa" },
+    { "it": "Lampone Giallo", "en": "Yellow raspberry", "fr": "Framboise jaune", "es": "Frambuesa amarilla" },
+    { "it": "Lampone Nero", "en": "Black raspberry", "fr": "Framboise noire", "es": "Frambuesa negra" },
+    { "it": "Litchi", "en": "Lychee", "fr": "Litchi", "es": "Litchi" },
+    { "it": "Limetta", "en": "Lime", "fr": "Lime", "es": "Lima" },
+    { "it": "Limone", "en": "Lemon", "fr": "Citron", "es": "Limón" },
+    { "it": "Limone di Sorrento", "en": "Sorrento lemon", "fr": "Citron de Sorrente", "es": "Limón de Sorrento" },
+    { "it": "Limone di Amalfi", "en": "Amalfi lemon", "fr": "Citron d'Amalfi", "es": "Limón de Amalfi" },
+    { "it": "Limone Cedrato", "en": "Citron-lemon", "fr": "Limon-cédrat", "es": "Limón cidrado" },
+    { "it": "Lulo", "en": "Lulo", "fr": "Lulo", "es": "Naranjilla" },
+    { "it": "Mandarino", "en": "Mandarin", "fr": "Mandarine", "es": "Mandarina" },
+    { "it": "Mandarancio", "en": "Tangerine", "fr": "Tangerine", "es": "Tangrina" },
+    { "it": "Mandorla", "en": "Almond", "fr": "Amande", "es": "Almendra" },
+    { "it": "Mango", "en": "Mango", "fr": "Mangue", "es": "Mango" },
+    { "it": "Mangostano", "en": "Mangosteen", "fr": "Mangoustan", "es": "Mangostán" },
+    { "it": "Mano di Buddha", "en": "Buddha's hand", "fr": "Main de Bouddha", "es": "Mano de Buda" },
+    { "it": "Mapo", "en": "Mapo", "fr": "Mapo", "es": "Mapo" },
+    { "it": "Maracuja", "en": "Passion fruit", "fr": "Fruit de la passion", "es": "Maracuyá" },
+    { "it": "Mela", "en": "Apple", "fr": "Pomme", "es": "Manzana" },
+    { "it": "Mela Cotogna", "en": "Quince", "fr": "Coing", "es": "Membrillo" },
+    { "it": "Mela Campana", "en": "Annurca apple", "fr": "Pomme Annurca", "es": "Manzana Annurca" },
+    { "it": "Mela Rosa", "en": "Rose apple", "fr": "Pomme rose", "es": "Pomarrosa" },
+    { "it": "Melograno", "en": "Pomegranate", "fr": "Grenade", "es": "Granada" },
+    { "it": "Melone", "en": "Melon", "fr": "Melon", "es": "Melón" },
+    { "it": "Melone Cantalupo", "en": "Cantaloupe", "fr": "Cantaloup", "es": "Cantalupo" },
+    { "it": "Melone Retato", "en": "Muskmelon", "fr": "Melon brodé", "es": "Melón reticulado" },
+    { "it": "Melone d'Inverno", "en": "Winter melon", "fr": "Melon d'hiver", "es": "Melón de invierno" },
+    { "it": "Mirtillo Nero", "en": "Bilberry", "fr": "Myrtille", "es": "Arándano" },
+    { "it": "Mirtillo Rosso", "en": "Cranberry", "fr": "Canneberge", "es": "Arándano rojo" },
+    { "it": "Mirtillo Blu", "en": "Blueberry", "fr": "Bleuet", "es": "Arándano azul" },
+    { "it": "Mirtillo Siberiano", "en": "Honeyberry", "fr": "Camerise", "es": "Baya de miel" },
+    { "it": "Mora", "en": "Blackberry", "fr": "Mûre", "es": "Mora" },
+    { "it": "Mora di Rovo", "en": "Wild blackberry", "fr": "Mûre sauvage", "es": "Mora silvestre" },
+    { "it": "Mora di Gelso", "en": "Mulberry", "fr": "Mûre de mûrier", "es": "Mora de morera" },
+    { "it": "Nashi", "en": "Nashi pear", "fr": "Nashi", "es": "Nashi" },
+    { "it": "Nashi (Pera-Mela)", "en": "Asian pear", "fr": "Poire asiatique", "es": "Pera asiática" },
+    { "it": "Nectarina", "en": "Nectarine", "fr": "Brugnon", "es": "Nectarina" },
+    { "it": "Nespola", "en": "Medlar", "fr": "Nèfle", "es": "Níspero" },
+    { "it": "Nespola Comune", "en": "Common medlar", "fr": "Nèfle commune", "es": "Nispero común" },
+    { "it": "Nespola del Giappone", "en": "Loquat", "fr": "Nèfle du Japon", "es": "Níspero japonés" },
+    { "it": "Nocciola", "en": "Hazelnut", "fr": "Noisette", "es": "Avellana" },
+    { "it": "Noce", "en": "Walnut", "fr": "Noix", "es": "Nuez" },
+    { "it": "Noce di Cocco", "en": "Coconut", "fr": "Noix de coco", "es": "Coco" },
+    { "it": "Noce di Pecan", "en": "Pecan", "fr": "Noix de pécan", "es": "Nuez pecana" },
+    { "it": "Noce di Macadamia", "en": "Macadamia nut", "fr": "Noix de macadamia", "es": "Nuez de macadamia" },
+    { "it": "Noce del Brasile", "en": "Brazil nut", "fr": "Noix du Brésil", "es": "Nuez de Brasil" },
+    { "it": "Olive", "en": "Olives", "fr": "Olives", "es": "Aceitunas" },
+    { "it": "Olivello Spinoso", "en": "Sea buckthorn", "fr": "Argousier", "es": "Espino giallo" },
+    { "it": "Papaya", "en": "Papaya", "fr": "Papaye", "es": "Papaya" },
+    { "it": "Passiflora", "en": "Passion flower fruit", "fr": "Passiflore", "es": "Pasionaria" },
+    { "it": "Pera", "en": "Pear", "fr": "Poire", "es": "Pera" },
+    { "it": "Pera Coscia", "en": "Coscia pear", "fr": "Poire Coscia", "es": "Pera Coscia" },
+    { "it": "Pera Mastantuono", "en": "Mastantuono pear", "fr": "Poire Mastantuono", "es": "Pera Mastantuono" },
+    { "it": "Pera Volpina", "en": "Volpina pear", "fr": "Poire Volpina", "es": "Pera Volpina" },
+    { "it": "Pesca", "en": "Peach", "fr": "Pêche", "es": "Melocoton" },
+    { "it": "Pesca Noce", "en": "Nectarine", "fr": "Nectarine", "es": "Nectarina" },
+    { "it": "Pesca Tabacchiera", "en": "Saturn peach", "fr": "Pêche plate", "es": "Paraguayo" },
+    { "it": "Pesca Percoca", "en": "Percoca peach", "fr": "Pavie", "es": "Percoca" },
+    { "it": "Pinolo", "en": "Pine nut", "fr": "Pignon de pin", "es": "Piñón" },
+    { "it": "Pistacchio", "en": "Pistachio", "fr": "Pistache", "es": "Pistacho" },
+    { "it": "Pitaya", "en": "Dragon fruit", "fr": "Pitaya", "es": "Pitahaya" },
+    { "it": "Platano", "en": "Plantain", "fr": "Banane plantain", "es": "Plátano macho" },
+    { "it": "Pompelmo", "en": "Grapefruit", "fr": "Pamplemousse", "es": "Pomelo" },
+    { "it": "Pompelmo Rosa", "en": "Pink grapefruit", "fr": "Pamplemousse rose", "es": "Pomelo rosa" },
+    { "it": "Pomelo", "en": "Pomelo", "fr": "Pomélo", "es": "Pamplemusa" },
+    { "it": "Prugna", "en": "Plum", "fr": "Prune", "es": "Ciruela" },
+    { "it": "Prugnolo", "en": "Sloe", "fr": "Prunelle", "es": "Endrina" },
+    { "it": "Rambutan", "en": "Rambutan", "fr": "Ramboutan", "es": "Rambután" },
+    { "it": "Ribes Nero", "en": "Blackcurrant", "fr": "Cassis", "es": "Groseilla negra" },
+    { "it": "Ribes Rosso", "en": "Redcurrant", "fr": "Groseille", "es": "Groseilla roja" },
+    { "it": "Ribes Bianco", "en": "White currant", "fr": "Groseille blanche", "es": "Groseilla blanca" },
+    { "it": "Rosa Canina", "en": "Rose hip", "fr": "Cynorrhodon", "es": "Escaramujo" },
+    { "it": "Rovo", "en": "Bramble", "fr": "Ronce", "es": "Zarza" },
+    { "it": "Sambuco", "en": "Elderberry", "fr": "Sureau", "es": "Saúco" },
+    { "it": "Sapodilla", "en": "Sapodilla", "fr": "Sapotille", "es": "Zapote" },
+    { "it": "Sorba", "en": "Service tree fruit", "fr": "Corme", "es": "Sorba" },
+    { "it": "Susina", "en": "Plum", "fr": "Prune", "es": "Ciruela" },
+    { "it": "Susina Regina Claudia", "en": "Greengage", "fr": "Reine-claude", "es": "Ciruela Claudia" },
+    { "it": "Tamarindo", "en": "Tamarind", "fr": "Tamarin", "es": "Tamarindo" },
+    { "it": "Tamarillo", "en": "Tamarillo", "fr": "Tamarillo", "es": "Tamarillo" },
+    { "it": "Tangelo", "en": "Tangelo", "fr": "Tangelo", "es": "Tangelo" },
+    { "it": "Ugli", "en": "Ugli fruit", "fr": "Ugli", "es": "Ugli" },
+    { "it": "Uva", "en": "Grape", "fr": "Raisin", "es": "Uva" },
+    { "it": "Uva Spina", "en": "Gooseberry", "fr": "Groseille à maquereau", "es": "Uva espina" },
+    { "it": "Uva Fragola", "en": "Fox grape", "fr": "Raisin framboise", "es": "Uva fresa" },
+    { "it": "Uva di Corinto", "en": "Zante currant", "fr": "Raisin de Corinthe", "es": "Uva de Corinto" },
+    { "it": "Uva Passa", "en": "Raisins", "fr": "Raisins secs", "es": "Pasas" },
+    { "it": "Uva Sultanina", "en": "Sultana", "fr": "Raisin de Smyrne", "es": "Sultanina" },
+    { "it": "Visciola", "en": "Sour cherry", "fr": "Griotte", "es": "Guinda" },
+    { "it": "Zenzero (Frutto)", "en": "Ginger (rhizome)", "fr": "Gingembre", "es": "Jengibre" },
+    { "it": "Zizifo", "en": "Jujube", "fr": "Jujube", "es": "Azufaifa" }
+];
 
-
-// 2. Creiamo la lista ufficiale (solo IT) per il database e i suggerimenti
+// 2. Creiamo la lista ufficiale
 const FRUIT_LIST = FRUIT_DATA.map(f => f.it);
 
-// 3. Generiamo la "Mappa Magica" delle traduzioni
+// 3. Generiamo la mappa delle traduzioni
 const FRUIT_TRANSLATIONS = {};
-
 FRUIT_DATA.forEach(item => {
     const nomeItaliano = item.it;
-    // Iteriamo su tutte le lingue (en, fr, es) presenti nell'oggetto
     Object.keys(item).forEach(lang => {
         if (lang !== 'it') {
-            // Salviamo la traduzione in minuscolo come "chiave" e l'italiano come "valore"
             const nomeTradotto = item[lang].toLowerCase().trim();
             FRUIT_TRANSLATIONS[nomeTradotto] = nomeItaliano;
         }
     });
 });
+
 // --- CONFIGURAZIONE FIREBASE ---
 const firebaseConfig = {
-    apiKey: "AIzaSyASl7UbctX-4weq8w94ZUxCrOIhl3jjqME",
+    apiKey: "AlzaSyASI7UbctX-4weq8w94ZUxCrOlhl3jjqME",
     authDomain: "suv-f-18d65.firebaseapp.com",
     databaseURL: "https://suv-f-18d65-default-rtdb.firebaseio.com",
     projectId: "suv-f-18d65",
@@ -507,8 +412,6 @@ let currentUser = "";
 let negativeState = {};
 let chartInstance = null;
 let currentFruitSelection = "";
-
-
 
 const DESCRIZIONI = {
     "Brix": "Quanto é dolce? (Es. Avocado 0; Dattero 100).",
@@ -555,6 +458,13 @@ const PARAMS = [
     { cat: "Logistica", color: "var(--c-logistica)", fields: ["Sbucciabilità", "Portabilità", "Seme Experience", "Impegno Mentale", "Anatomia Scarto", "Versatilità", "Buccia", "Resa (Spreco)"] }
 ];
 
+const UI_STRINGS = {
+    it: {title: "S.U.V.F.", info: "Benvenuto nel Sistema Universale Valutazione Frutti...", loginBtn: "LOG IN / ACCEDI", searchPh: "CERCA FRUTTO...", personal: "PERSONALE", global: "GLOBALE", saveBtn: "SALVA ANALISI", rem: "Rimani Loggato" },
+    en: {title: "U.F.E.S.", info: "Welcome to the Universal Fruit Evaluation System...", loginBtn: "LOG IN / SIGN IN", searchPh: "SEARCH FRUIT...", personal: "PERSONAL", global: "GLOBAL", saveBtn: "SAVE ANALYSIS", rem: "Remember Me" },
+    es: {title: "S.U.E.F.", info: "Bienvenido al Sistema Universal de Evaluación...", loginBtn: "ENTRAR / ACCEDER", searchPh: "BUSCAR FRUTA...", personal: "PERSONAL", global: "GLOBAL", saveBtn: "GUARDAR", rem: "Recordarme" },
+    fr: {title: "S.U.É.F.", info: "Bienvenue dans le Système Universel d'Évaluation...", loginBtn: "CONNEXION", searchPh: "RECHERCHER UN FRUIT...", personal: "PERSONNEL", global: "GLOBAL", saveBtn: "ENREGISTRER", rem: "Rester connecté" }
+};
+
 // --- INIZIALIZZAZIONE ---
 window.onload = () => {
     const savedUser = localStorage.getItem('suvf_user');
@@ -562,6 +472,7 @@ window.onload = () => {
         document.getElementById('user-input').value = savedUser;
         doLogin();
     }
+    
     const dl = document.getElementById('fruit-db');
     if (dl) {
         dl.innerHTML = "";
@@ -571,43 +482,38 @@ window.onload = () => {
             dl.appendChild(opt);
         });
     }
+    translateSite();
 };
-
-const UI_STRINGS = {
-    it: { title: "S.U.V.F.", info: "Benvenuto nel Sistema Universale...", loginBtn: "LOG IN / ACCEDI", searchPh: "CERCA FRUTTO...", personal: "PERSONALE", global: "GLOBALE", saveBtn: "SALVA ANALISI", rem: "Rimani Loggato" },
-    en: { title: "U.F.E.S.", info: "Welcome to the Universal Fruit Evaluation System...", loginBtn: "LOG IN / SIGN IN", searchPh: "SEARCH FRUIT...", personal: "PERSONAL", global: "GLOBAL", saveBtn: "SAVE ANALYSIS", rem: "Remember Me" },
-    es: { title: "S.U.E.F.", info: "Bienvenido al Sistema Universal de Evaluación...", loginBtn: "ENTRAR / ACCEDER", searchPh: "BUSCAR FRUTA...", personal: "PERSONAL", global: "GLOBAL", saveBtn: "GUARDAR", rem: "Recordarme" },
-    fr: { title: "S.U.É.F.", info: "Bienvenue dans le Système Universel d'Évaluation...", loginBtn: "CONNEXION", searchPh: "RECHERCHER UN FRUIT...", personal: "PERSONNEL", global: "GLOBAL", saveBtn: "ENREGISTRER", rem: "Rester connecté" }
-};
-
 
 function renderParams() {
     const container = document.getElementById('params-container');
     container.innerHTML = "";
     let i = 0;
+    
     PARAMS.forEach(group => {
         container.innerHTML += `<div class="group-title" style="background:${group.color}">${group.cat}</div>`;
         let grid = `<div class="params-grid">`;
+        
         group.fields.forEach(f => {
             grid += `
-                <div class="card" id="card-${i}" style="border-left-color:${group.color}">
-                    <div class="neg-btn" id="neg-btn-${i}" onclick="toggleNeg(${i})">NEGATIVO</div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <div style="font-weight:900; font-size:0.9rem">${f}</div>
-                        <div onclick="toggleInfo(${i})" style="cursor:pointer; background:var(--gray); border-radius:50%; width:18px; height:18px; display:flex; align-items:center; justify-content:center; font-size:0.6rem; font-weight:900;">?</div>
-                    </div>
-                    <div id="info-${i}" style="display:none; font-size: 0.7rem; color: #546e7a; font-style: italic; margin-top:5px; background:#f1f8e9; padding:5px; border-radius:5px; border:1px dashed #ccc;">
-                        ${DESCRIZIONI[f] || ""}
-                    </div>
-                    <div class="slider-row">
-                        <div class="label-row">Valore <span id="v-val-${i}">50</span></div>
-                        <input type="range" id="v-sli-${i}" min="0" max="100" value="50" oninput="calc()">
-                    </div>
-                    <div class="slider-row">
-                        <div class="label-row">Peso <span id="w-val-${i}">50%</span></div>
-                        <input type="range" id="w-sli-${i}" min="0" max="100" value="50" oninput="calc()">
-                    </div>
-                </div>`;
+            <div class="card" id="card-${i}" style="border-left-color:${group.color}">
+                <div class="neg-btn" id="neg-btn-${i}" onclick="toggleNeg(${i})">NEGATIVO</div>
+                <div style="display: flex; align-items:center; gap:8px;">
+                    <div style="font-weight:900; font-size:0.9rem">${f}</div>
+                    <div onclick="toggleInfo(${i})" style="cursor:pointer; background:var(--gray); border-radius:50%; width: 18px; height: 18px; display:flex; align-items:center; justify-content:center; font-size:0.6rem; font-weight:900;">?</div>
+                </div>
+                <div id="info-${i}" style="display:none; font-size: 0.7rem; color: #546e7a; font-style: italic; margin-top:5px; background:#f1f8e9; padding:5px; border-radius:5px; border:1px dashed #ccc;">
+                    ${DESCRIZIONI[f] || ""}
+                </div>
+                <div class="slider-row">
+                    <div class="label-row">Valore <span id="v-val-${i}">50</span></div>
+                    <input type="range" id="v-sli-${i}" min="0" max="100" value="50" oninput="calc()">
+                </div>
+                <div class="slider-row">
+                    <div class="label-row">Peso <span id="w-val-${i}">50%</span></div>
+                    <input type="range" id="w-sli-${i}" min="0" max="100" value="50" oninput="calc()">
+                </div>
+            </div>`;
             i++;
         });
         grid += `</div>`;
@@ -628,23 +534,6 @@ function toggleNeg(i) {
     calc();
 }
 
-function validateSelection() {
-    const input = document.getElementById('fruit-search');
-    const btn = document.getElementById('btn-save-final');
-    const userVal = input.value.trim().toLowerCase();
-    const match = FRUIT_LIST.find(f => f.toLowerCase() === userVal);
-    if (match) {
-        input.className = "main-search valid";
-        input.value = match;
-        btn.disabled = false;
-        currentFruitSelection = match;
-    } else {
-        input.className = "main-search invalid";
-        btn.disabled = true;
-        currentFruitSelection = "";
-    }
-}
-
 function calc() {
     let total = 0;
     for(let i=0; i<35; i++) {
@@ -652,6 +541,7 @@ function calc() {
         const w = parseInt(document.getElementById(`w-sli-${i}`).value);
         document.getElementById(`v-val-${i}`).innerText = v;
         document.getElementById(`w-val-${i}`).innerText = w + "%";
+        
         let score = (v * (w/100));
         if(negativeState[i]) score *= -1;
         total += score;
@@ -660,19 +550,38 @@ function calc() {
     if(chartInstance) updateRadar();
 }
 
+function validateSelection() {
+    const input = document.getElementById('fruit-search');
+    const btn = document.getElementById('btn-save-final');
+    const userVal = input.value.trim().toLowerCase();
+    
+    let foundFruit = FRUIT_LIST.find(f => f.toLowerCase() === userVal);
+    if (!foundFruit) {
+        foundFruit = FRUIT_TRANSLATIONS[userVal];
+    }
+    
+    if (foundFruit) {
+        input.className = "main-search valid";
+        input.value = foundFruit;
+        currentFruitSelection = foundFruit;
+        btn.disabled = false;
+    } else {
+        input.className = "main-search invalid";
+        btn.disabled = true;
+        currentFruitSelection = "";
+    }
+}
+
 function nav(id, el) {
-    // Nasconde tutti gli schermi e spegne i tasti
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     
-    // Attiva lo schermo giusto e il tasto cliccato
-    const targetScreen = document.getElementById('scr-' + id);
+    const targetScreen = document.getElementById(`scr-${id}`);
     if (targetScreen) {
         targetScreen.classList.add('active');
         el.classList.add('active');
     }
-
-    // Aggiornamenti specifici
+    
     if(id === 'grafico') updateRadar();
     if(id === 'classifiche') updateRankings();
 }
@@ -685,18 +594,22 @@ function updateRadar() {
         style.getPropertyValue('--c-psiche').trim(),
         style.getPropertyValue('--c-logistica').trim()
     ];
-    const labels = []; const data = []; const pointColors = [];
+    
+    const labels = [];
+    const data = [];
+    const pointColors = [];
     let i = 0;
+    
     PARAMS.forEach((g, gIdx) => g.fields.forEach(f => {
         labels.push(f);
         data.push(document.getElementById(`v-sli-${i}`).value);
         pointColors.push(coloriCategorie[gIdx]);
         i++;
     }));
-
+    
     const ctx = document.getElementById('radarChart').getContext('2d');
     if(chartInstance) chartInstance.destroy();
-
+    
     chartInstance = new Chart(ctx, {
         type: 'radar',
         data: {
@@ -704,7 +617,7 @@ function updateRadar() {
             datasets: [{
                 label: currentFruitSelection || 'Analisi',
                 data: data,
-                backgroundColor: 'rgba(240, 98, 146, 0.2)', // Leggermente più visibile
+                backgroundColor: 'rgba(240, 98, 146, 0.2)',
                 borderColor: '#f06292',
                 pointBackgroundColor: pointColors,
                 pointBorderColor: '#fff',
@@ -712,60 +625,40 @@ function updateRadar() {
                 borderWidth: 2
             }]
         },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, // Permette l'espansione verticale
-            layout: {
-                padding: {
-                    top: 10,
-                    bottom: 10,
-                    left: 30,  // Spazio per le etichette lunghe
-                    right: 30
-                }
-            },
-            scales: { 
-                r: { 
-                    min: 0, 
-                    max: 100, 
-                    beginAtZero: true,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { top: 10, bottom: 10, left: 30, right: 30 } },
+            scales: {
+                r: {
+                    min: 0, max: 100, beginAtZero: true,
                     angleLines: { color: 'rgba(0,0,0,0.05)' },
                     grid: { color: 'rgba(0,0,0,0.05)' },
-                    ticks: { display: false }, 
-                    pointLabels: { 
-    display: true,
-    centerPointLabels: true,
-    font: { 
-        weight: 'bold', 
-        size: 10 
-    },
-    color: (ctx) => pointColors[ctx.index],
-    padding: 25, // Aumentato da 10 a 25 per allontanare i testi dal grafico
-    backdropColor: 'rgba(255,255,255,0.6)', // Crea un leggero alone bianco dietro il testo
-    backdropPadding: 2
-}
-                        },
-    
-                    } 
-                } 
+                    ticks: { display: false },
+                    pointLabels: {
+                        display: true, centerPointLabels: true,
+                        font: { weight: 'bold', size: 10 },
+                        color: (ctx) => pointColors[ctx.index],
+                        padding: 25,
+                        backdropColor: 'rgba(255,255,255,0.6)',
+                        backdropPadding: 2
+                    }
+                }
             },
-            plugins: { 
-                legend: { display: false },
-                tooltip: { enabled: true }
-            }
+            plugins: { legend: { display: false }, tooltip: { enabled: true } }
         }
     });
 }
-    
+
 function cloudSave() {
     if (!currentFruitSelection) return alert("Seleziona un frutto dalla lista!");
     
-    // Raccogliamo i dati attuali dei 35 parametri
     let analisiAttuale = {
         score: parseInt(document.getElementById('live-score').innerText),
         timestamp: Date.now(),
         parametri: {}
     };
-
+    
     for(let i=0; i<35; i++) {
         analisiAttuale.parametri[i] = {
             v: parseInt(document.getElementById(`v-sli-${i}`).value),
@@ -773,11 +666,9 @@ function cloudSave() {
             n: negativeState[i] ? -1 : 1
         };
     }
-
-    // 1. Salva nel Personale
+    
     db.ref(`users/${currentUser}/analisi/${currentFruitSelection}`).set(analisiAttuale);
-
-    // 2. Aggiorna il Globale con transazione (Media Parametrica)
+    
     const globalRef = db.ref(`global_stats/${currentFruitSelection}`);
     globalRef.transaction((currentData) => {
         if (currentData === null) {
@@ -804,17 +695,16 @@ function cloudSave() {
 
 function deleteAnalysis(fruitName) {
     if(!confirm(`Vuoi eliminare "${fruitName}"? Il tuo contributo verrà rimosso anche dalla media globale.`)) return;
-
+    
     db.ref(`users/${currentUser}/analisi/${fruitName}`).once('value', snap => {
         const dataUser = snap.val();
         if(!dataUser) return;
-
-        // Rimuovi dal Globale e ricalcola
+        
         const globalRef = db.ref(`global_stats/${fruitName}`);
         globalRef.transaction((currentData) => {
             if (currentData) {
                 currentData.count--;
-                if (currentData.count <= 0) return null; 
+                if (currentData.count <= 0) return null;
                 for(let i=0; i<35; i++) {
                     currentData.somme[i].v -= dataUser.parametri[i].v;
                     currentData.somme[i].w -= dataUser.parametri[i].w;
@@ -823,14 +713,13 @@ function deleteAnalysis(fruitName) {
             }
             return currentData;
         });
-
-        // Rimuovi dal Personale
+        
         db.ref(`users/${currentUser}/analisi/${fruitName}`).remove();
+        closeModal();
     });
 }
 
 function updateRankings() {
-    // Lista Personale - Cliccando si apre il Pop-up con tasti MODIFICA ed ELIMINA
     db.ref(`users/${currentUser}/analisi`).on('value', snap => {
         const div = document.getElementById('list-pers');
         div.innerHTML = "";
@@ -838,16 +727,15 @@ function updateRankings() {
             const name = child.key;
             const val = child.val();
             div.innerHTML += `
-                <div class="rank-box" onclick="openFruitModal('${name}', 'pers')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; background:white; padding:15px; border-radius:20px;">
-                    <div>
-                        <b>${name}</b> 
-                    </div>
+            <div class="rank-box" onclick="openFruitModal('${name}', 'pers')">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <b>${name}</b>
                     <span style="color:var(--accent); font-weight:900;">${val.score}</span>
-                </div>`;
+                </div>
+            </div>`;
         });
     });
-
-    // Lista Globale - Cliccando si apre il Pop-up con tasto PARTECIPANTI
+    
     db.ref('global_stats').on('value', snap => {
         const div = document.getElementById('list-glob');
         div.innerHTML = "";
@@ -855,33 +743,33 @@ function updateRankings() {
             const name = child.key;
             const data = child.val();
             let totalScore = 0;
-            // Calcoliamo la media dei rating per la visualizzazione rapida
-            Object.values(data.utenti).forEach(s => totalScore += s);
+            if(data.utenti) {
+                Object.values(data.utenti).forEach(s => totalScore += s);
+            }
             let avgScore = Math.round(totalScore / data.count);
-
             div.innerHTML += `
-                <div class="rank-box" onclick="openFruitModal('${name}', 'glob')" style="cursor:pointer; margin-bottom:10px; background:white; padding:15px; border-radius:20px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <b>${name}</b> 
-                        <span style="color:var(--accent); font-weight:900;">${avgScore}</span>
-                    </div>
-                    <div style="margin-top:8px; font-size:0.7rem; color:#888; font-weight:500;">
-                        Media basata su ${data.count} analisi
-                    </div>
-                </div>`;
+            <div class="rank-box" onclick="openFruitModal('${name}', 'glob')">
+                <div style="display: flex; justify-content:space-between; align-items:center;">
+                    <b>${name}</b>
+                    <span style="color:var(--accent); font-weight:900;">${avgScore}</span>
+                </div>
+                <div style="margin-top:8px; font-size:0.7rem; color:#888; font-weight:500;">
+                    Media basata su ${data.count} analisi
+                </div>
+            </div>`;
         });
     });
 }
+
 function showUsers(fruitName) {
     db.ref(`global_stats/${fruitName}/utenti`).once('value', snap => {
         let txt = `Partecipanti per ${fruitName}:\n\n`;
-        snap.forEach(u => { txt += `- ${u.key}: Rating ${u.val()}\n`; });
+        snap.forEach(u => { txt += `${u.key}: Rating ${u.val()}\n`; });
         alert(txt);
     });
 }
 
 let modalChartInstance = null;
-
 function openFruitModal(fruitName, type) {
     const modal = document.getElementById('modal-fruit');
     const title = document.getElementById('modal-title');
@@ -891,36 +779,32 @@ function openFruitModal(fruitName, type) {
     
     modal.style.display = 'flex';
     title.innerText = fruitName;
-
+    
     if(type === 'pers') {
         db.ref(`users/${currentUser}/analisi/${fruitName}`).once('value', snap => {
             const data = snap.val();
             subtitle.innerText = "TUA ANALISI PERSONALE";
             scoreVal.innerText = data.score;
             renderModalChart(data.parametri);
-            
             actions.innerHTML = `
                 <div class="btn-modifica" onclick="prepareEdit('${fruitName}')">MODIFICA</div>
-                <div class="btn-elimina" onclick="deleteAnalysis('${fruitName}'); closeModal();">ELIMINA</div>
+                <div class="btn-elimina" onclick="deleteAnalysis('${fruitName}')">ELIMINA</div>
             `;
         });
     } else {
         db.ref(`global_stats/${fruitName}`).once('value', snap => {
             const data = snap.val();
             let totalScore = 0;
-            Object.values(data.utenti).forEach(s => totalScore += s);
+            if(data.utenti) Object.values(data.utenti).forEach(s => totalScore += s);
             let avgScore = Math.round(totalScore / data.count);
-            
             subtitle.innerText = `MEDIA GLOBALE SU ${data.count} UTENTI`;
             scoreVal.innerText = avgScore;
             
-            // Calcolo parametri medi
             let mediaParams = {};
-            for(let i=0; i<35; i++){
+            for(let i=0; i<35; i++) {
                 mediaParams[i] = { v: Math.round(data.somme[i].v / data.count) };
             }
             renderModalChart(mediaParams);
-
             actions.innerHTML = `
                 <div class="btn-partecipanti" onclick="showUsers('${fruitName}')">PARTECIPANTI</div>
             `;
@@ -929,15 +813,13 @@ function openFruitModal(fruitName, type) {
 }
 
 function prepareEdit(fruitName) {
-    // Carica i dati negli slider principali
     db.ref(`users/${currentUser}/analisi/${fruitName}/parametri`).once('value', snap => {
         applyToSliders(snap.val());
-        // Imposta il nome nella barra di ricerca e la selezione corrente
-        document.getElementById('fruit-search').value = fruitName;
-        currentFruitSelection = fruitName;
-        closeModal();
-        nav('vota', document.querySelectorAll('.nav-item')[0]);
     });
+    document.getElementById('fruit-search').value = fruitName;
+    currentFruitSelection = fruitName;
+    closeModal();
+    nav('vota', document.querySelectorAll('.nav-item')[0]);
 }
 
 function closeModal() {
@@ -948,12 +830,13 @@ function renderModalChart(params) {
     const ctx = document.getElementById('modalChart').getContext('2d');
     if(modalChartInstance) modalChartInstance.destroy();
     
-    let labels = []; let dataValues = [];
+    let labels = [];
+    let dataValues = [];
     for(let i=0; i<35; i++) {
-        labels.push(""); // Etichette vuote per pulizia nel pop-up
+        labels.push(""); 
         dataValues.push(params[i].v || 0);
     }
-
+    
     modalChartInstance = new Chart(ctx, {
         type: 'radar',
         data: {
@@ -966,9 +849,9 @@ function renderModalChart(params) {
                 pointRadius: 0
             }]
         },
-        options: { 
-            scales: { r: { min:0, max:100, ticks: {display:false} } },
-            plugins: { legend: {display:false} }
+        options: {
+            scales: { r: { min: 0, max: 100, ticks: { display: false } } },
+            plugins: { legend: { display: false } }
         }
     });
 }
@@ -978,89 +861,23 @@ function applyToSliders(params) {
         document.getElementById(`v-sli-${i}`).value = params[i].v;
         document.getElementById(`w-sli-${i}`).value = params[i].w;
     }
-    calc(); 
-}
-function filterFruits() {
-    const inputStr = document.getElementById('fruit-search').value.toLowerCase().trim();
-    const listContainer = document.getElementById('search-results');
-    listContainer.innerHTML = "";
-
-    if (inputStr.length < 1) return;
-
-    // STEP 1: Controlliamo se l'input è una traduzione (es. "apple" -> "Mela")
-    const traduzioneTrovata = FRUIT_TRANSLATIONS[inputStr];
-
-    // STEP 2: Filtriamo la lista ufficiale italiana
-    const filtered = FRUIT_LIST.filter(nomeIT => {
-        const nomeITLower = nomeIT.toLowerCase();
-        
-        // Il frutto passa il filtro se:
-        // - L'utente ha scritto parte del nome italiano (es. "me" per "mela")
-        // - OPPURE l'utente ha scritto una traduzione esatta (es. "apple" che punta a "mela")
-        return nomeITLower.includes(inputStr) || (traduzioneTrovata && nomeITLower === traduzioneTrovata.toLowerCase());
-    });
-
-    // STEP 3: Rendering dei risultati
-    filtered.forEach(fruttoIT => {
-        const div = document.createElement('div');
-        div.className = "search-item"; // Assicurati di avere uno stile per questa classe
-        div.innerHTML = fruttoIT;
-        
-        div.onclick = () => {
-            selectFruit(fruttoIT); // Funzione che imposta il frutto corrente
-            document.getElementById('fruit-search').value = fruttoIT;
-            listContainer.innerHTML = "";
-        };
-        listContainer.appendChild(div);
-    });
-}
-
-function validateSelection() {
-    const input = document.getElementById('fruit-search');
-    const btn = document.getElementById('btn-save-final');
-    const userVal = input.value.trim().toLowerCase();
-    
-    // Cerca tra i nomi italiani o tra le traduzioni
-    let foundFruit = FRUIT_LIST.find(f => f.toLowerCase() === userVal);
-    
-    if (!foundFruit) {
-        // Se non lo trova in italiano, cerca nel dizionario traduzioni
-        foundFruit = FRUIT_TRANSLATIONS[userVal];
-    }
-
-    if (foundFruit) {
-        input.className = "main-search valid";
-        input.value = foundFruit; // Forza il nome in Italiano per il Database
-        currentFruitSelection = foundFruit;
-        btn.disabled = false;
-    } else {
-        input.className = "main-search invalid";
-        btn.disabled = true;
-        currentFruitSelection = "";
-    }
+    calc();
 }
 
 function syncLang(el) {
     const val = el.value;
-    
-    // 1. Allinea entrambi i selettori sullo stesso valore
     const loginSelect = document.getElementById('lang-select-login');
     const headerSelect = document.getElementById('lang-select');
-    
     if (loginSelect) loginSelect.value = val;
     if (headerSelect) headerSelect.value = val;
-
-    // 2. Esegue la traduzione di tutti i testi (incluso il benvenuto)
     translateSite();
 }
 
 function translateSite() {
     const lang = document.getElementById('lang-select').value;
     const s = UI_STRINGS[lang];
-
     if (!s) return;
-
-    // Traduzione testi principali
+    
     document.getElementById('txt-title').innerText = s.title;
     document.getElementById('txt-info').innerHTML = s.info;
     document.getElementById('txt-login-btn').innerText = s.loginBtn;
@@ -1069,33 +886,25 @@ function translateSite() {
     document.getElementById('txt-rank-g').innerText = s.global;
     document.getElementById('btn-save-final').innerText = s.saveBtn;
     document.getElementById('txt-rem').innerText = s.rem;
-
-    // Se siamo già dentro l'app, aggiorna i parametri
-    if (currentUser) renderParams(); 
+    
+    if (currentUser) renderParams();
 }
 
 function doLogin() {
     const input = document.getElementById('user-input');
     const val = input.value.trim();
-    
     if(!val) {
         alert("Inserisci un ID Analista!");
         return;
     }
-
-    // Trasforma il nome in un ID valido per Firebase
-    currentUser = val.replace(/[^a-zA-Z0-9]/g, '_');
     
-    // Salvataggio locale
+    currentUser = val.replace(/[^a-zA-Z0-9]/g, '_');
     if(document.getElementById('remember-me').checked) {
         localStorage.setItem('suvf_user', currentUser);
     }
-
-    // Cambio Schermata
+    
     document.getElementById('scr-login').style.display = 'none';
     document.getElementById('scr-vota').classList.add('active');
-    
-    // Mostra UI di navigazione
     document.getElementById('app-header').style.display = 'flex';
     document.getElementById('ui-nav').style.display = 'flex';
     document.getElementById('ui-scorebar').style.display = 'flex';
@@ -1111,7 +920,6 @@ function doLogout() {
         window.location.reload();
     }
 }
-
 </script>
 </body>
 </html>

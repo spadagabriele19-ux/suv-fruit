@@ -957,35 +957,36 @@ function translateSite() {
     if (currentUser) renderParams();
 }
 
-function dologin() {
-    const user = document.getElementById('user-input').value;
+function doLogin() {
+    const userInput = document.getElementById('user-input');
+    const user = userInput.value.trim();
     
-    if (user.trim() === "") {
+    if (user === "") {
         alert("Per favore, inserisci un ID Analista");
         return;
     }
 
-    // 1. Salva l'utente nella variabile globale
-    currentUser = user.trim();
+    // Imposta l'utente globale
+    currentUser = user;
 
-    // 2. Nascondi il login
+    // Gestione "Rimani Loggato"
+    if (document.getElementById('remember-me').checked) {
+        localStorage.setItem('suvf_user', currentUser);
+    }
+
+    // 1. Nascondi lo schermo di login
     document.getElementById('scr-login').classList.remove('active');
 
-    // 3. Mostra la schermata principale corretta (scr-vota)
+    // 2. Mostra lo schermo di voto (scr-vota)
     document.getElementById('scr-vota').classList.add('active');
 
-    // 4. Mostra l'interfaccia fissa (Header, Navigazione, Punteggio)
+    // 3. Rendi visibili Header, Navigazione e Scorebar
     document.getElementById('app-header').style.display = 'flex';
     document.getElementById('ui-nav').style.display = 'flex';
     document.getElementById('ui-scorebar').style.display = 'flex';
 
-    // 5. Mostra l'ID utente nell'header
-    const uiIdEl = document.getElementById('ui-id');
-    if (uiIdEl) {
-        uiIdEl.innerText = currentUser;
-    }
-
-    // 6. Genera gli slider dei frutti
+    // 4. Aggiorna l'ID nell'header e genera i parametri
+    document.getElementById('ui-id').innerText = currentUser;
     renderParams();
 }
 function doLogout() {

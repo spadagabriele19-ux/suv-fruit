@@ -272,7 +272,49 @@
             </div>
     </div>
 </div>
+function updateRankings() {
+    // Lista Personale - Cliccando si apre il Pop-up con tasti MODIFICA ed ELIMINA
+    db.ref(`users/${currentUser}/analisi`).on('value', snap => {
+        const div = document.getElementById('list-pers');
+        div.innerHTML = "";
+        snap.forEach(child => {
+            const name = child.key;
+            const val = child.val();
+            div.innerHTML += `
+                <div class="rank-box" onclick="openFruitModal('${name}', 'pers')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; background:white; padding:15px; border-radius:20px;">
+                    <div>
+                        <b>${name}</b> 
+                    </div>
+                    <span style="color:var(--accent); font-weight:900;">${val.score}</span>
+                </div>`;
+        });
+    });
 
+    // Lista Globale - Cliccando si apre il Pop-up con tasto PARTECIPANTI
+    db.ref('global_stats').on('value', snap => {
+        const div = document.getElementById('list-glob');
+        div.innerHTML = "";
+        snap.forEach(child => {
+            const name = child.key;
+            const data = child.val();
+            let totalScore = 0;
+            // Calcoliamo la media dei rating per la visualizzazione rapida
+            Object.values(data.utenti).forEach(s => totalScore += s);
+            let avgScore = Math.round(totalScore / data.count);
+
+            div.innerHTML += `
+                <div class="rank-box" onclick="openFruitModal('${name}', 'glob')" style="cursor:pointer; margin-bottom:10px; background:white; padding:15px; border-radius:20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <b>${name}</b> 
+                        <span style="color:var(--accent); font-weight:900;">${avgScore}</span>
+                    </div>
+                    <div style="margin-top:8px; font-size:0.7rem; color:#888; font-weight:500;">
+                        Media basata su ${data.count} analisi
+                    </div>
+                </div>`;
+        });
+    });
+}
 <style>
 .modal-overlay {
     position: fixed; top:0; left:0; width:100%; height:100%;
@@ -301,6 +343,181 @@
 </style>
 
 <script>
+
+    // 1. Il tuo Array completo (ho abbreviato per l'esempio, incolla il tuo integrale)
+const FRUIT_DATA = [
+  { "it": "Albicocca", "en": "Apricot", "fr": "Abricot", "es": "Albaricoque" },
+  { "it": "Alchechengi", "en": "Physalis", "fr": "Alkékenge", "es": "Alquequenje" },
+  { "it": "Amarena", "en": "Sour cherry", "fr": "Griotte", "es": "Guinda" },
+  { "it": "Ananas", "en": "Pineapple", "fr": "Ananas", "es": "Piña" },
+  { "it": "Anacardo", "en": "Cashew apple", "fr": "Pomme cajou", "es": "Anacardo" },
+  { "it": "Anguria", "en": "Watermelon", "fr": "Pastèque", "es": "Sandía" },
+  { "it": "Annona", "en": "Custard apple", "fr": "Annone", "es": "Chirimoya" },
+  { "it": "Arancia", "en": "Orange", "fr": "Orange", "es": "Naranja" },
+  { "it": "Arancia Amara", "en": "Bitter orange", "fr": "Orange amère", "es": "Naranja amarga" },
+  { "it": "Arancia Bionda", "en": "Sweet orange", "fr": "Orange blonde", "es": "Naranja blanca" },
+  { "it": "Arancia Rossa", "en": "Blood orange", "fr": "Orange sanguine", "es": "Naranja sanguínea" },
+  { "it": "Arancio Trifogliato", "en": "Trifoliate orange", "fr": "Citronnier épineux", "es": "Naranjo trifoliado" },
+  { "it": "Aronia", "en": "Chokeberry", "fr": "Aronia", "es": "Aronia" },
+  { "it": "Avocado", "en": "Avocado", "fr": "Avocat", "es": "Aguacate" },
+  { "it": "Azzeruolo", "en": "Azarole", "fr": "Azérole", "es": "Acerola" },
+  { "it": "Babaco", "en": "Babaco", "fr": "Babaco", "es": "Babaco" },
+  { "it": "Bananito", "en": "Baby banana", "fr": "Frécinette", "es": "Banano dátil" },
+  { "it": "Banana", "en": "Banana", "fr": "Banane", "es": "Plátano" },
+  { "it": "Bergamotto", "en": "Bergamot", "fr": "Bergamote", "es": "Bergamota" },
+  { "it": "Biricoccolo", "en": "Purple apricot", "fr": "Abricot-prune", "es": "Albaricoque púrpura" },
+  { "it": "Caco", "en": "Persimmon", "fr": "Kaki", "es": "Caqui" },
+  { "it": "Calamandino", "en": "Calamondin", "fr": "Calamondin", "es": "Calamondín" },
+  { "it": "Carruba", "en": "Carob", "fr": "Caroube", "es": "Algarroba" },
+  { "it": "Carambola", "en": "Star fruit", "fr": "Carambole", "es": "Carambola" },
+  { "it": "Castagna", "en": "Chestnut", "fr": "Châtaigne", "es": "Castaña" },
+  { "it": "Cedro", "en": "Citron", "fr": "Cédrat", "es": "Cidra" },
+  { "it": "Ciliegia", "en": "Cherry", "fr": "Cerise", "es": "Cereza" },
+  { "it": "Chinotto", "en": "Chinotto", "fr": "Chinotto", "es": "Chinotto" },
+  { "it": "Clementina", "en": "Clementine", "fr": "Clémentine", "es": "Clementina" },
+  { "it": "Cocco", "en": "Coconut", "fr": "Noix de coco", "es": "Coco" },
+  { "it": "Cocomero", "en": "Watermelon", "fr": "Pastèque", "es": "Sandía" },
+  { "it": "Cocomero Asinino", "en": "Squirting cucumber", "fr": "Concombre d'âne", "es": "Pepinillo del diablo" },
+  { "it": "Corbezzolo", "en": "Strawberry tree fruit", "fr": "Arbouse", "es": "Madroño" },
+  { "it": "Corniolo", "en": "Cornelian cherry", "fr": "Cornouille", "es": "Cornejo" },
+  { "it": "Cotogna", "en": "Quince", "fr": "Coing", "es": "Membrillo" },
+  { "it": "Crespino", "en": "Barberry", "fr": "Épine-vinette", "es": "Berberis" },
+  { "it": "Curuba", "en": "Banana passionfruit", "fr": "Curuba", "es": "Curuba" },
+  { "it": "Dattero", "en": "Date", "fr": "Datte", "es": "Dátil" },
+  { "it": "Dattero Cinese", "en": "Jujube", "fr": "Jujube", "es": "Azufaifa" },
+  { "it": "Durian", "en": "Durian", "fr": "Durian", "es": "Durión" },
+  { "it": "Fagiolo Cornetto", "en": "String bean", "fr": "Haricot vert", "es": "Judía verde" },
+  { "it": "Feijoa", "en": "Feijoa", "fr": "Feijoa", "es": "Feijoa" },
+  { "it": "Fico", "en": "Fig", "fr": "Figue", "es": "Higo" },
+  { "it": "Fico d'India", "en": "Prickly pear", "fr": "Figue de Barbarie", "es": "Tuna" },
+  { "it": "Fico degli Ottentotti", "en": "Hottentot fig", "fr": "Figue des Hottentots", "es": "Bálsamo" },
+  { "it": "Fragola", "en": "Strawberry", "fr": "Fraise", "es": "Fresa" },
+  { "it": "Fragolina di bosco", "en": "Wild strawberry", "fr": "Fraise des bois", "es": "Fresa silvestre" },
+  { "it": "Frutto della Passione", "en": "Passion fruit", "fr": "Fruit de la passion", "es": "Maracuyá" },
+  { "it": "Frutto del Drago", "en": "Dragon fruit", "fr": "Fruit du dragon", "es": "Pitahaya" },
+  { "it": "Frutto Stella", "en": "Star fruit", "fr": "Carambole", "es": "Carambola" },
+  { "it": "Gelso Bianco", "en": "White mulberry", "fr": "Mûrier blanc", "es": "Mora blanca" },
+  { "it": "Gelso Nero", "en": "Black mulberry", "fr": "Mûrier noir", "es": "Mora negra" },
+  { "it": "Gelso Rosso", "en": "Red mulberry", "fr": "Mûrier rouge", "es": "Mora roja" },
+  { "it": "Giaca", "en": "Jackfruit", "fr": "Jacquier", "es": "Yaca" },
+  { "it": "Giuggiola", "en": "Jujube", "fr": "Jujube", "es": "Azufaifa" },
+  { "it": "Granadilla", "en": "Sweet granadilla", "fr": "Grenadille", "es": "Granadilla" },
+  { "it": "Guava", "en": "Guava", "fr": "Goyave", "es": "Guayaba" },
+  { "it": "Jostaberry", "en": "Jostaberry", "fr": "Casse-ille", "es": "Jostaberry" },
+  { "it": "Kiwi", "en": "Kiwi", "fr": "Kiwi", "es": "Kiwi" },
+  { "it": "Kiwano", "en": "Horned melon", "fr": "Métulon", "es": "Kiwano" },
+  { "it": "Kumquat", "en": "Kumquat", "fr": "Kumquat", "es": "Kumquat" },
+  { "it": "Lampone", "en": "Raspberry", "fr": "Framboise", "es": "Frambuesa" },
+  { "it": "Lampone Giallo", "en": "Yellow raspberry", "fr": "Framboise jaune", "es": "Frambuesa amarilla" },
+  { "it": "Lampone Nero", "en": "Black raspberry", "fr": "Framboise noire", "es": "Frambuesa negra" },
+  { "it": "Litchi", "en": "Lychee", "fr": "Litchi", "es": "Litchi" },
+  { "it": "Limetta", "en": "Lime", "fr": "Lime", "es": "Lima" },
+  { "it": "Limone", "en": "Lemon", "fr": "Citron", "es": "Limón" },
+  { "it": "Limone di Sorrento", "en": "Sorrento lemon", "fr": "Citron de Sorrente", "es": "Limón de Sorrento" },
+  { "it": "Limone di Amalfi", "en": "Amalfi lemon", "fr": "Citron d'Amalfi", "es": "Limón de Amalfi" },
+  { "it": "Limone Cedrato", "en": "Citron-lemon", "fr": "Limon-cédrat", "es": "Limón cidrado" },
+  { "it": "Lulo", "en": "Lulo", "fr": "Lulo", "es": "Naranjilla" },
+  { "it": "Mandarino", "en": "Mandarin", "fr": "Mandarine", "es": "Mandarina" },
+  { "it": "Mandarancio", "en": "Tangerine", "fr": "Tangerine", "es": "Tangrina" },
+  { "it": "Mandorla", "en": "Almond", "fr": "Amande", "es": "Almendra" },
+  { "it": "Mango", "en": "Mango", "fr": "Mangue", "es": "Mango" },
+  { "it": "Mangostano", "en": "Mangosteen", "fr": "Mangoustan", "es": "Mangostán" },
+  { "it": "Mano di Buddha", "en": "Buddha's hand", "fr": "Main de Bouddha", "es": "Mano de Buda" },
+  { "it": "Mapo", "en": "Mapo", "fr": "Mapo", "es": "Mapo" },
+  { "it": "Maracuja", "en": "Passion fruit", "fr": "Fruit de la passion", "es": "Maracuyá" },
+  { "it": "Mela", "en": "Apple", "fr": "Pomme", "es": "Manzana" },
+  { "it": "Mela Cotogna", "en": "Quince", "fr": "Coing", "es": "Membrillo" },
+  { "it": "Mela Campana", "en": "Annurca apple", "fr": "Pomme Annurca", "es": "Manzana Annurca" },
+  { "it": "Mela Rosa", "en": "Rose apple", "fr": "Pomme rose", "es": "Pomarrosa" },
+  { "it": "Melograno", "en": "Pomegranate", "fr": "Grenade", "es": "Granada" },
+  { "it": "Melone", "en": "Melon", "fr": "Melon", "es": "Melón" },
+  { "it": "Melone Cantalupo", "en": "Cantaloupe", "fr": "Cantaloup", "es": "Cantalupo" },
+  { "it": "Melone Retato", "en": "Muskmelon", "fr": "Melon brodé", "es": "Melón reticulado" },
+  { "it": "Melone d'Inverno", "en": "Winter melon", "fr": "Melon d'hiver", "es": "Melón de invierno" },
+  { "it": "Mirtillo Nero", "en": "Bilberry", "fr": "Myrtille", "es": "Arándano" },
+  { "it": "Mirtillo Rosso", "en": "Cranberry", "fr": "Canneberge", "es": "Arándano rojo" },
+  { "it": "Mirtillo Blu", "en": "Blueberry", "fr": "Bleuet", "es": "Arándano azul" },
+  { "it": "Mirtillo Siberiano", "en": "Honeyberry", "fr": "Camerise", "es": "Baya de miel" },
+  { "it": "Mora", "en": "Blackberry", "fr": "Mûre", "es": "Mora" },
+  { "it": "Mora di Rovo", "en": "Wild blackberry", "fr": "Mûre sauvage", "es": "Mora silvestre" },
+  { "it": "Mora di Gelso", "en": "Mulberry", "fr": "Mûre de mûrier", "es": "Mora de morera" },
+  { "it": "Nashi", "en": "Nashi pear", "fr": "Nashi", "es": "Nashi" },
+  { "it": "Nashi (Pera-Mela)", "en": "Asian pear", "fr": "Poire asiatique", "es": "Pera asiática" },
+  { "it": "Nectarina", "en": "Nectarine", "fr": "Brugnon", "es": "Nectarina" },
+  { "it": "Nespola", "en": "Medlar", "fr": "Nèfle", "es": "Níspero" },
+  { "it": "Nespola Comune", "en": "Common medlar", "fr": "Nèfle commune", "es": "Níspero común" },
+  { "it": "Nespola del Giappone", "en": "Loquat", "fr": "Nèfle du Japon", "es": "Níspero japonés" },
+  { "it": "Nocciola", "en": "Hazelnut", "fr": "Noisette", "es": "Avellana" },
+  { "it": "Noce", "en": "Walnut", "fr": "Noix", "es": "Nuez" },
+  { "it": "Noce di Cocco", "en": "Coconut", "fr": "Noix de coco", "es": "Coco" },
+  { "it": "Noce di Pecan", "en": "Pecan", "fr": "Noix de pécan", "es": "Nuez pecana" },
+  { "it": "Noce di Macadamia", "en": "Macadamia nut", "fr": "Noix de macadamia", "es": "Nuez de macadamia" },
+  { "it": "Noce del Brasile", "en": "Brazil nut", "fr": "Noix du Brésil", "es": "Nuez de Brasil" },
+  { "it": "Olive", "en": "Olives", "fr": "Olives", "es": "Aceitunas" },
+  { "it": "Olivello Spinoso", "en": "Sea buckthorn", "fr": "Argousier", "es": "Espino giallo" },
+  { "it": "Papaya", "en": "Papaya", "fr": "Papaye", "es": "Papaya" },
+  { "it": "Passiflora", "en": "Passion flower fruit", "fr": "Passiflore", "es": "Pasionaria" },
+  { "it": "Pera", "en": "Pear", "fr": "Poire", "es": "Pera" },
+  { "it": "Pera Coscia", "en": "Coscia pear", "fr": "Poire Coscia", "es": "Pera Coscia" },
+  { "it": "Pera Mastantuono", "en": "Mastantuono pear", "fr": "Poire Mastantuono", "es": "Pera Mastantuono" },
+  { "it": "Pera Volpina", "en": "Volpina pear", "fr": "Poire Volpina", "es": "Pera Volpina" },
+  { "it": "Pesca", "en": "Peach", "fr": "Pêche", "es": "Melocoton" },
+  { "it": "Pesca Noce", "en": "Nectarine", "fr": "Nectarine", "es": "Nectarina" },
+  { "it": "Pesca Tabacchiera", "en": "Saturn peach", "fr": "Pêche plate", "es": "Paraguayo" },
+  { "it": "Pesca Percoca", "en": "Percoca peach", "fr": "Pavie", "es": "Percoca" },
+  { "it": "Pinolo", "en": "Pine nut", "fr": "Pignon de pin", "es": "Piñón" },
+  { "it": "Pistacchio", "en": "Pistachio", "fr": "Pistache", "es": "Pistacho" },
+  { "it": "Pitaya", "en": "Dragon fruit", "fr": "Pitaya", "es": "Pitahaya" },
+  { "it": "Platano", "en": "Plantain", "fr": "Banane plantain", "es": "Plátano macho" },
+  { "it": "Pompelmo", "en": "Grapefruit", "fr": "Pamplemousse", "es": "Pomelo" },
+  { "it": "Pompelmo Rosa", "en": "Pink grapefruit", "fr": "Pamplemousse rose", "es": "Pomelo rosa" },
+  { "it": "Pomelo", "en": "Pomelo", "fr": "Pomélo", "es": "Pamplemusa" },
+  { "it": "Prugna", "en": "Plum", "fr": "Prune", "es": "Ciruela" },
+  { "it": "Prugnolo", "en": "Sloe", "fr": "Prunelle", "es": "Endrina" },
+  { "it": "Rambutan", "en": "Rambutan", "fr": "Ramboutan", "es": "Rambután" },
+  { "it": "Ribes Nero", "en": "Blackcurrant", "fr": "Cassis", "es": "Groseilla negra" },
+  { "it": "Ribes Rosso", "en": "Redcurrant", "fr": "Groseille", "es": "Groseilla roja" },
+  { "it": "Ribes Bianco", "en": "White currant", "fr": "Groseille blanche", "es": "Groseilla blanca" },
+  { "it": "Rosa Canina", "en": "Rose hip", "fr": "Cynorrhodon", "es": "Escaramujo" },
+  { "it": "Rovo", "en": "Bramble", "fr": "Ronce", "es": "Zarza" },
+  { "it": "Sambuco", "en": "Elderberry", "fr": "Sureau", "es": "Saúco" },
+  { "it": "Sapodilla", "en": "Sapodilla", "fr": "Sapotille", "es": "Zapote" },
+  { "it": "Sorba", "en": "Service tree fruit", "fr": "Corme", "es": "Sorba" },
+  { "it": "Susina", "en": "Plum", "fr": "Prune", "es": "Ciruela" },
+  { "it": "Susina Regina Claudia", "en": "Greengage", "fr": "Reine-claude", "es": "Ciruela Claudia" },
+  { "it": "Tamarindo", "en": "Tamarind", "fr": "Tamarin", "es": "Tamarindo" },
+  { "it": "Tamarillo", "en": "Tamarillo", "fr": "Tamarillo", "es": "Tamarillo" },
+  { "it": "Tangelo", "en": "Tangelo", "fr": "Tangelo", "es": "Tangelo" },
+  { "it": "Ugli", "en": "Ugli fruit", "fr": "Ugli", "es": "Ugli" },
+  { "it": "Uva", "en": "Grape", "fr": "Raisin", "es": "Uva" },
+  { "it": "Uva Spina", "en": "Gooseberry", "fr": "Groseille à maquereau", "es": "Uva espina" },
+  { "it": "Uva Fragola", "en": "Fox grape", "fr": "Raisin framboise", "es": "Uva fresa" },
+  { "it": "Uva di Corinto", "en": "Zante currant", "fr": "Raisin de Corinthe", "es": "Uva de Corinto" },
+  { "it": "Uva Passa", "en": "Raisins", "fr": "Raisins secs", "es": "Pasas" },
+  { "it": "Uva Sultanina", "en": "Sultana", "fr": "Raisin de Smyrne", "es": "Sultanina" },
+  { "it": "Visciola", "en": "Sour cherry", "fr": "Griotte", "es": "Guinda" },
+  { "it": "Zenzero (Frutto)", "en": "Ginger (rhizome)", "fr": "Gingembre", "es": "Jengibre" },
+  { "it": "Zizifo", "en": "Jujube", "fr": "Jujube", "es": "Azufaifa" }
+]
+
+
+// 2. Creiamo la lista ufficiale (solo IT) per il database e i suggerimenti
+const FRUIT_LIST = FRUIT_DATA.map(f => f.it);
+
+// 3. Generiamo la "Mappa Magica" delle traduzioni
+const FRUIT_TRANSLATIONS = {};
+
+FRUIT_DATA.forEach(item => {
+    const nomeItaliano = item.it;
+    // Iteriamo su tutte le lingue (en, fr, es) presenti nell'oggetto
+    Object.keys(item).forEach(lang => {
+        if (lang !== 'it') {
+            // Salviamo la traduzione in minuscolo come "chiave" e l'italiano come "valore"
+            const nomeTradotto = item[lang].toLowerCase().trim();
+            FRUIT_TRANSLATIONS[nomeTradotto] = nomeItaliano;
+        }
+    });
+});
 // --- CONFIGURAZIONE FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyASl7UbctX-4weq8w94ZUxCrOIhl3jjqME",
@@ -796,6 +1013,48 @@ function applyToSliders(params) {
     }
     calc(); 
 }
+function logout() {
+    if(confirm("Vuoi uscire dall'account?")) {
+        firebase.auth().signOut().then(() => {
+            window.location.reload(); // Ricarica la pagina per tornare al login
+        });
+    }
+}
+function filterFruits() {
+    const inputStr = document.getElementById('fruit-search').value.toLowerCase().trim();
+    const listContainer = document.getElementById('search-results');
+    listContainer.innerHTML = "";
+
+    if (inputStr.length < 1) return;
+
+    // STEP 1: Controlliamo se l'input è una traduzione (es. "apple" -> "Mela")
+    const traduzioneTrovata = FRUIT_TRANSLATIONS[inputStr];
+
+    // STEP 2: Filtriamo la lista ufficiale italiana
+    const filtered = FRUIT_LIST.filter(nomeIT => {
+        const nomeITLower = nomeIT.toLowerCase();
+        
+        // Il frutto passa il filtro se:
+        // - L'utente ha scritto parte del nome italiano (es. "me" per "mela")
+        // - OPPURE l'utente ha scritto una traduzione esatta (es. "apple" che punta a "mela")
+        return nomeITLower.includes(inputStr) || (traduzioneTrovata && nomeITLower === traduzioneTrovata.toLowerCase());
+    });
+
+    // STEP 3: Rendering dei risultati
+    filtered.forEach(fruttoIT => {
+        const div = document.createElement('div');
+        div.className = "search-item"; // Assicurati di avere uno stile per questa classe
+        div.innerHTML = fruttoIT;
+        
+        div.onclick = () => {
+            selectFruit(fruttoIT); // Funzione che imposta il frutto corrente
+            document.getElementById('fruit-search').value = fruttoIT;
+            listContainer.innerHTML = "";
+        };
+        listContainer.appendChild(div);
+    });
+}
+
 </script>
 </body>
 </html>

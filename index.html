@@ -31,7 +31,7 @@
         .nav-item.active { color: var(--accent); }
         
         /* Search */
-        .search-wrap { padding: 20px; position: sticky; top: 65px; background: var(--bg); z-index: 900; }
+        .search-wrap { padding: 20px; background: var(--bg); z-index: 900; }
         .main-search { width: 100%; padding: 20px; border-radius: 20px; border: 3px solid var(--gray); font-size: 1.1rem; font-weight: 700; outline: none; transition: 0.3s; }
         .main-search.valid { border-color: #4caf50; background: #f1f8e9; }
         .main-search.invalid { border-color: var(--negativo); }
@@ -136,6 +136,13 @@
 <div id="scr-login" class="screen active">
     <div class="auth-container">
         <h1 id="txt-title">S.U.V.F.</h1>
+
+        <select id="lang-select-login" onchange="syncLang(this)" style="border:2px solid var(--gray); padding:10px; border-radius:12px; font-weight:800; width:100%; margin-bottom:15px;">
+            <option value="it">🇮🇹 Italiano</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="es">🇪🇸 Español</option>
+            <option value="fr">🇫🇷 Français</option>
+        </select>
         <div class="info-box" id="txt-info">
             <b>Benvenuto nel Sistema Universale Valutazione Frutti.</b><br>
             Usa gli slider per impostare il Valore (0-100) e il Peso (importanza) di ogni parametro. Usa il tasto <b>NEGATIVO</b> per i difetti (es. fibrosità eccessiva). Il sistema calcolerà l'indice di perfezione botanica.
@@ -147,15 +154,7 @@
         <button class="save-btn" style="width:100%; padding:18px;" onclick="doLogin()" id="txt-login-btn">LOG IN / ACCEDI</button>
     </div>
 </div>
-    <div id="app-header" class="header" style="display:none;">
-    <div style="font-weight: 900; letter-spacing: -1px;">S.U.V.F. <span id="ui-id" style="color:var(--accent); font-size:0.7rem; margin-left:10px;"></span></div>
-    <select id="lang-select" onchange="translateSite()" style="border:none; background:var(--gray); padding:5px 10px; border-radius:10px; font-weight:800;">
-        <option value="it">🇮🇹 IT</option>
-        <option value="en">🇬🇧 EN</option>
-        <option value="es">🇪🇸 ES</option>
-        <option value="fr">🇫🇷 FR</option>
-    </select>
-</div>
+    
 
 <!-- VOTA SCREEN -->
 <div id="scr-vota" class="screen">
@@ -577,7 +576,7 @@ function translateSite() {
     const lang = document.getElementById('lang-select').value;
     const s = UI_STRINGS[lang];
 
-    // Traduzione elementi fissi
+    // Traduzione testi UI
     document.getElementById('txt-title').innerText = s.title;
     document.getElementById('txt-info').innerHTML = s.info;
     document.getElementById('txt-login-btn').innerText = s.loginBtn;
@@ -587,10 +586,23 @@ function translateSite() {
     document.getElementById('btn-save-final').innerText = s.saveBtn;
     document.getElementById('txt-rem').innerText = s.rem;
 
-    // Se i parametri sono già stati renderizzati, li rigeneriamo per tradurre i nomi
-    if (currentUser) renderParams(); 
-}
+    // Traduzione dinamica delle categorie dei parametri
+    const catTranslations = {
+        it: ["Gusto", "Meccanica", "Psiche & Bio", "Logistica"],
+        en: ["Taste", "Mechanics", "Psyche & Bio", "Logistics"],
+        es: ["Gusto", "Mecánica", "Psique & Bio", "Logística"],
+        fr: ["Goût", "Mécanique", "Psyché & Bio", "Logistique"]
+    };
+    
+    PARAMS.forEach((group, index) => {
+        group.cat = catTranslations[lang][index];
+    });
 
+    // Se l'utente è loggato, ridisegna i parametri nella nuova lingua
+    if (currentUser) {
+        renderParams(); 
+    }
+}
 function doLogin() {
     // Prende l'ID dall'input giusto (user-input)
     const input = document.getElementById('user-input');
@@ -770,14 +782,19 @@ function updateRadar() {
                     grid: { color: 'rgba(0,0,0,0.05)' },
                     ticks: { display: false }, 
                     pointLabels: { 
-                        display: true,
-                        centerPointLabels: true,
-                        font: { 
-                            weight: 'bold', 
-                            size: 9 // Un po' più piccolo per far stare tutto
+    display: true,
+    centerPointLabels: true,
+    font: { 
+        weight: 'bold', 
+        size: 10 
+    },
+    color: (ctx) => pointColors[ctx.index],
+    padding: 25, // Aumentato da 10 a 25 per allontanare i testi dal grafico
+    backdropColor: 'rgba(255,255,255,0.6)', // Crea un leggero alone bianco dietro il testo
+    backdropPadding: 2
+}
                         },
-                        color: (ctx) => pointColors[ctx.index],
-                        padding: 10 // Distanza delle scritte dai punti
+    
                     } 
                 } 
             },
@@ -1053,6 +1070,12 @@ function filterFruits() {
         };
         listContainer.appendChild(div);
     });
+}
+
+function syncLang(el) {
+    const val = el.value;
+    document.getElementById('lang-select').value = val; // Sincronizza header
+    translateSite();
 }
 function validateSelection() {
     const input = document.getElementById('fruit-search');

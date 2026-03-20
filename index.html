@@ -220,6 +220,19 @@
             "Se la <b>Dolcezza</b> ha valore 80 ma il peso è solo al 50%, il contributo sarà di +40 punti. Se è un difetto, sarà -40."
         </p>
     </div>
+        <!-- AGGIUNTA LOGICA GLOBALE -->
+        <hr style="border:0; border-top:1px solid #eee; margin:25px 0;">
+        <h4 style="font-weight:900; font-size:0.8rem; text-transform:uppercase; color:var(--accent);">Media Globale Collettiva</h4>
+        <p style="font-size:0.85rem; color:#444; line-height:1.5;">
+            Il rating globale non è una semplice media dei punteggi finali. <br><br>
+            Per ogni frutto, il sistema calcola la <b>Media Matematica di ognuno dei 35 parametri</b> votati da tutti gli utenti. <br><br>
+            Viene poi applicata la formula S.U.V.F. su questi valori medi. Questo garantisce che il risultato rifletta fedelmente l'opinione collettiva su ogni singola sfumatura del frutto.
+        </p>
+    </div>
+    
+    <div style="height:150px;"></div> 
+</div>
+    
     
     <div style="height:150px;"></div> 
 </div>
@@ -239,6 +252,53 @@
     <div class="nav-item" onclick="nav('classifiche', this)">CLASSIFICHE</div>
     <div class="nav-item" onclick="nav('algoritmo', this)">LOGICA</div>
 </div>
+
+<div id="modal-fruit" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+        <span class="close-x" onclick="closeModal()">×</span>
+        <h2 id="modal-title" style="text-align:center; margin-bottom:5px;"></h2>
+        <div id="modal-subtitle" style="text-align:center; font-size:0.8rem; color:#888; margin-bottom:15px;"></div>
+        
+        <div class="modal-score-circle">
+            <span id="modal-score-val">0</span>
+            <small>SUV-F</small>
+        </div>
+
+        <div style="width:100%; height:250px; margin: 20px 0;">
+            <canvas id="modalChart"></canvas>
+        </div>
+
+        <div id="modal-actions" class="modal-footer">
+            </div>
+    </div>
+</div>
+
+<style>
+.modal-overlay {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+    z-index: 2000; display: flex; align-items: center; justify-content: center;
+}
+.modal-content {
+    background: white; width: 90%; max-width: 400px; padding: 25px;
+    border-radius: 30px; position: relative; animation: slideUp 0.3s ease;
+}
+.close-x {
+    position: absolute; top: 15px; right: 20px; font-size: 2rem; 
+    color: #ccc; cursor: pointer;
+}
+.modal-score-circle {
+    width: 80px; height: 80px; border-radius: 50%; background: var(--accent);
+    color: white; margin: 0 auto; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; font-weight: 900;
+}
+.modal-footer { display: flex; gap: 10px; margin-top: 20px; }
+.btn-modifica { background: var(--dark); color: white; flex: 1; padding: 12px; border-radius: 15px; text-align:center; font-weight:bold; }
+.btn-elimina { background: #ff3b30; color: white; flex: 1; padding: 12px; border-radius: 15px; text-align:center; font-weight:bold; }
+.btn-partecipanti { background: #f0f0f0; color: var(--dark); flex: 1; padding: 12px; border-radius: 15px; text-align:center; font-weight:bold; }
+
+@keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+</style>
 
 <script>
 // --- CONFIGURAZIONE FIREBASE ---
@@ -636,26 +696,97 @@ function showUsers(fruitName) {
     });
 }
 
-function loadToGraph(fruitName, type) {
+let modalChartInstance = null;
+
+function openFruitModal(fruitName, type) {
+    const modal = document.getElementById('modal-fruit');
+    const title = document.getElementById('modal-title');
+    const subtitle = document.getElementById('modal-subtitle');
+    const actions = document.getElementById('modal-actions');
+    const scoreVal = document.getElementById('modal-score-val');
+    
+    modal.style.display = 'flex';
+    title.innerText = fruitName;
+
     if(type === 'pers') {
-        db.ref(`users/${currentUser}/analisi/${fruitName}/parametri`).once('value', snap => {
-            applyToSliders(snap.val());
-            nav('grafico', document.querySelectorAll('.nav-item')[1]);
+        db.ref(`users/${currentUser}/analisi/${fruitName}`).once('value', snap => {
+            const data = snap.val();
+            subtitle.innerText = "TUA ANALISI PERSONALE";
+            scoreVal.innerText = data.score;
+            renderModalChart(data.parametri);
+            
+            actions.innerHTML = `
+                <div class="btn-modifica" onclick="prepareEdit('${fruitName}')">MODIFICA</div>
+                <div class="btn-elimina" onclick="deleteAnalysis('${fruitName}'); closeModal();">ELIMINA</div>
+            `;
         });
     } else {
         db.ref(`global_stats/${fruitName}`).once('value', snap => {
             const data = snap.val();
+            let totalScore = 0;
+            Object.values(data.utenti).forEach(s => totalScore += s);
+            let avgScore = Math.round(totalScore / data.count);
+            
+            subtitle.innerText = `MEDIA GLOBALE SU ${data.count} UTENTI`;
+            scoreVal.innerText = avgScore;
+            
+            // Calcolo parametri medi
             let mediaParams = {};
-            for(let i=0; i<35; i++) {
-                mediaParams[i] = { 
-                    v: Math.round(data.somme[i].v / data.count), 
-                    w: Math.round(data.somme[i].w / data.count) 
-                };
+            for(let i=0; i<35; i++){
+                mediaParams[i] = { v: Math.round(data.somme[i].v / data.count) };
             }
-            applyToSliders(mediaParams);
-            nav('grafico', document.querySelectorAll('.nav-item')[1]);
+            renderModalChart(mediaParams);
+
+            actions.innerHTML = `
+                <div class="btn-partecipanti" onclick="showUsers('${fruitName}')">PARTECIPANTI</div>
+            `;
         });
     }
+}
+
+function prepareEdit(fruitName) {
+    // Carica i dati negli slider principali
+    db.ref(`users/${currentUser}/analisi/${fruitName}/parametri`).once('value', snap => {
+        applyToSliders(snap.val());
+        // Imposta il nome nella barra di ricerca e la selezione corrente
+        document.getElementById('fruit-search').value = fruitName;
+        currentFruitSelection = fruitName;
+        closeModal();
+        nav('vota', document.querySelectorAll('.nav-item')[0]);
+    });
+}
+
+function closeModal() {
+    document.getElementById('modal-fruit').style.display = 'none';
+}
+
+function renderModalChart(params) {
+    const ctx = document.getElementById('modalChart').getContext('2d');
+    if(modalChartInstance) modalChartInstance.destroy();
+    
+    let labels = []; let dataValues = [];
+    for(let i=0; i<35; i++) {
+        labels.push(""); // Etichette vuote per pulizia nel pop-up
+        dataValues.push(params[i].v || 0);
+    }
+
+    modalChartInstance = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: dataValues,
+                backgroundColor: 'rgba(255, 204, 0, 0.4)',
+                borderColor: '#FFCC00',
+                borderWidth: 2,
+                pointRadius: 0
+            }]
+        },
+        options: { 
+            scales: { r: { min:0, max:100, ticks: {display:false} } },
+            plugins: { legend: {display:false} }
+        }
+    });
 }
 
 function applyToSliders(params) {

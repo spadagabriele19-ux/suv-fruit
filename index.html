@@ -492,11 +492,6 @@ let negativeState = {};
 let chartInstance = null;
 let currentFruitSelection = "";
 
-// --- DATABASE FRUTTI (Incolla qui la tua lista da 700 nomi) ---
-const FRUIT_LIST = [
-  "Albicocca", "Alchechengi", "Amarena", "Ananas", "Anacardo", "Anguria", "Annona", "Arancia", "Arancia Amara", "Arancia Bionda", "Arancia Rossa", "Arancio Trifogliato", "Aronia", "Avocado", "Azzeruolo", "Babaco", "Bananito", "Banana", "Bergamotto", "Biricoccolo", "Caco", "Calamandino", "Carruba", "Carambola", "Castagna", "Cedro", "Ciliegia", "Chinotto", "Clementina", "Cocco", "Cocomero", "Cocomero Asinino", "Corbezzolo", "Corniolo", "Cotogna", "Crespino", "Curuba", "Dattero", "Dattero Cinese", "Durian", "Fagiolo Cornetto", "Feijoa", "Fico", "Fico d'India", "Fico degli Ottentotti", "Fragola", "Fragolina di bosco", "Frutto della Passione", "Frutto del Drago", "Frutto Stella", "Gelso Bianco", "Gelso Nero", "Gelso Rosso", "Giaca", "Giuggiola", "Granadilla", "Guava", "Jostaberry", "Kiwi", "Kiwano", "Kumquat", "Lampone", "Lampone Giallo", "Lampone Nero", "Litchi", "Limetta", "Limone", "Limone di Sorrento", "Limone di Amalfi", "Limone Cedrato", "Lulo", "Mandarino", "Mandarancio", "Mandorla", "Mango", "Mangostano", "Mano di Buddha", "Mapo", "Maracuja", "Mela", "Mela Cotogna", "Mela Campana", "Mela Rosa", "Melograno", "Melone", "Melone Cantalupo", "Melone Retato", "Melone d'Inverno", "Mirtillo Nero", "Mirtillo Rosso", "Mirtillo Blu", "Mirtillo Siberiano", "Mora", "Mora di Rovo", "Mora di Gelso", "Nashi", "Nashi (Pera-Mela)", "Nectarina", "Nespola", "Nespola Comune", "Nespola del Giappone", "Nocciola", "Noce", "Noce di Cocco", "Noce di Pecan", "Noce di Macadamia", "Noce del Brasile", "Olive", "Olivello Spinoso", "Papaya", "Passiflora", "Pera", "Pera Coscia", "Pera Mastantuono", "Pera Volpina", "Pesca", "Pesca Noce", "Pesca Tabacchiera", "Pesca Percoca", "Pinolo", "Pistacchio", "Pitaya", "Platano", "Pompelmo", "Pompelmo Rosa", "Pomelo", "Prugna", "Prugnolo", "Rambutan", "Ribes Nero", "Ribes Rosso", "Ribes Bianco", "Rosa Canina", "Rovo", "Sambuco", "Sapodilla", "Sorba", "Susina", "Susina Regina Claudia", "Tamarindo", "Tamarillo", "Tangelo", "Ugli", "Uva", "Uva Spina", "Uva Fragola", "Uva di Corinto", "Uva Passa", "Uva Sultanina", "Visciola", "Zenzero (Frutto)", "Zizifo"
-]
-
 
 
 const DESCRIZIONI = {
@@ -563,15 +558,29 @@ window.onload = () => {
 };
 
 function doLogin() {
-    currentUser = document.getElementById('user-input').value.trim().replace(/[^a-zA-Z0-9]/g, '_');
-    if(!currentUser) return alert("Inserire ID");
-    if(document.getElementById('remember-me').checked) localStorage.setItem('suvf_user', currentUser);
+    // Prende l'ID dall'input giusto (user-input)
+    const input = document.getElementById('user-input');
+    currentUser = input.value.trim().replace(/[^a-zA-Z0-9]/g, '_');
+    
+    if(!currentUser) {
+        alert("Inserisci un ID Analista!");
+        return;
+    }
+
+    // Se la spunta è attiva, salva il nome
+    if(document.getElementById('remember-me').checked) {
+        localStorage.setItem('suvf_user', currentUser);
+    }
+
+    // Nasconde il login e mostra l'app
     document.getElementById('scr-login').classList.remove('active');
     document.getElementById('scr-vota').classList.add('active');
     document.getElementById('app-header').style.display = 'flex';
     document.getElementById('ui-nav').style.display = 'flex';
     document.getElementById('ui-scorebar').style.display = 'flex';
     document.getElementById('ui-id').innerText = currentUser.toUpperCase();
+    
+    // Carica i parametri e le classifiche
     renderParams();
     updateRankings();
 }
@@ -1011,7 +1020,6 @@ function filterFruits() {
         listContainer.appendChild(div);
     });
 }
-
 </script>
 </body>
 </html>

@@ -136,28 +136,44 @@
     </div>
 </div>
 
-<!-- ALGORITMO SCREEN -->
-<div id="scr-algoritmo" class="screen">
-    <h2 style="text-align:center; color:var(--accent);">LOGICA DI CALCOLO</h2>
-    <div class="card" style="background:white; padding:20px; border-radius:20px;">
-        <p>Il punteggio finale $S$ è determinato dalla sommatoria dei prodotti tra il valore di ogni parametro $v_i$ e il suo peso relativo $w_i$, applicando un eventuale coefficiente di negatività $n_i$.</p>
+<!-- ALGORITMO SCREEN PULITO -->
+<div id="scr-algoritmo" class="screen" style="padding:20px;">
+    <h2 style="text-align:center; font-weight:900; color:var(--accent); text-transform:uppercase; letter-spacing:1px;">Logica di Calcolo</h2>
+    
+    <div class="card" style="background:white; padding:25px; border-radius:30px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); border:none;">
+        <p style="font-size:0.95rem; line-height:1.6; color:#444;">
+            Il punteggio finale è calcolato analizzando ogni singolo parametro in base all'importanza (Peso) che gli hai assegnato.
+        </p>
         
-        <div style="background:#f8f9fa; padding:15px; border-radius:10px; text-align:center; font-size:1.2rem; margin:20px 0; border:1px solid #ddd;">
-            $$S = \sum_{i=1}^{35} (v_i \cdot \frac{w_i}{100}) \cdot n_i$$
+        <div style="background:#f8f9fa; padding:20px; border-radius:20px; text-align:center; margin:20px 0; border:1px solid #eee;">
+            <div style="font-size:0.7rem; color:#888; text-transform:uppercase; font-weight:800; margin-bottom:5px;">Formula S.U.V.F.</div>
+            <b style="font-size:1.3rem; color:var(--dark);">Punti = (Valore × Peso%) × Stato</b>
         </div>
 
-        <ul style="font-size:0.85rem; line-height:1.6;">
-            <li>$v_i$: Valore assegnato (0-100)</li>
-            <li>$w_i$: Peso dell'importanza (0-100%)</li>
-            <li>$n_i$: Moltiplicatore di stato ($1$ se positivo, $-1$ se negativo)</li>
-        </ul>
+        <div style="display:grid; gap:15px; margin-top:20px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="background:var(--accent); color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:bold;">1</span>
+                <div style="font-size:0.85rem;"><b>Valore:</b> L'intensità della caratteristica (0-100).</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="background:var(--accent); color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:bold;">2</span>
+                <div style="font-size:0.85rem;"><b>Peso:</b> Quanto quel parametro influisce sul totale.</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="background:var(--accent); color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:bold;">3</span>
+                <div style="font-size:0.85rem;"><b>Stato:</b> Se è <b>Negativo</b>, i punti vengono sottratti.</div>
+            </div>
+        </div>
         
-        <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+        <hr style="border:0; border-top:1px solid #eee; margin:25px 0;">
         
-        <h4>ESEMPIO GRAFICO</h4>
-        <p style="font-size:0.8rem; color:#666;">Se un parametro ha valore 80 e peso 50%, contribuisce con +40 punti. Se attivato come "Negativo", sottrae 40 punti.</p>
-        
+        <h4 style="font-weight:900; font-size:0.8rem; text-transform:uppercase; color:#888;">Esempio Pratico</h4>
+        <p style="font-size:0.85rem; color:#666; font-style:italic;">
+            "Se la <b>Dolcezza</b> ha valore 80 ma il peso è solo al 50%, il contributo sarà di +40 punti. Se è un difetto, sarà -40."
+        </p>
     </div>
+    
+    <div style="height:150px;"></div> 
 </div>
     
 <!-- NAV & SCOREBAR -->

@@ -957,18 +957,36 @@ function translateSite() {
     if (currentUser) renderParams();
 }
 
-function doLogin() {
+function dologin() {
     const user = document.getElementById('user-input').value;
+    
     if (user.trim() === "") {
-        alert("Per favore, inserisci un ID Analista"); // O la traduzione corrispondente
+        alert("Per favore, inserisci un ID Analista");
         return;
     }
-    
-    // Nasconde il login e mostra l'app
+
+    // 1. Salva l'utente nella variabile globale
+    currentUser = user.trim();
+
+    // 2. Nascondi il login
     document.getElementById('scr-login').classList.remove('active');
-    document.getElementById('scr-main').classList.add('active'); // Cambia 'scr-main' con l'ID della tua schermata principale
-    
-    console.log("Analista loggato:", user);
+
+    // 3. Mostra la schermata principale corretta (scr-vota)
+    document.getElementById('scr-vota').classList.add('active');
+
+    // 4. Mostra l'interfaccia fissa (Header, Navigazione, Punteggio)
+    document.getElementById('app-header').style.display = 'flex';
+    document.getElementById('ui-nav').style.display = 'flex';
+    document.getElementById('ui-scorebar').style.display = 'flex';
+
+    // 5. Mostra l'ID utente nell'header
+    const uiIdEl = document.getElementById('ui-id');
+    if (uiIdEl) {
+        uiIdEl.innerText = currentUser;
+    }
+
+    // 6. Genera gli slider dei frutti
+    renderParams();
 }
 function doLogout() {
     if(confirm("Sicuro di voler uscire?")) {

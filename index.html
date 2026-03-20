@@ -69,6 +69,54 @@
         .screen { display: none; padding: 20px; animation: fadeIn 0.3s; }
         .screen.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* Stile per le schede della classifica (Personale e Globale) */
+.rank-box {
+    background: white;
+    padding: 18px;
+    border-radius: 22px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    border: 1px solid #f0f0f0;
+    transition: all 0.2s ease;
+}
+
+/* Effetto al tocco sulle schede */
+.rank-box:active {
+    transform: scale(0.98);
+    background: #fafafa;
+}
+
+/* Stile del cestino */
+.delete-btn {
+    color: #ff3b30; /* Rosso iOS */
+    padding: 10px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Tasto Partecipanti */
+.participants-link {
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: var(--dark);
+    background: #f0f0f0;
+    padding: 4px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* Badge del numero votanti nella media globale */
+.voters-count {
+    font-size: 0.7rem;
+    color: #8e8e93;
+    font-weight: 500;
+}
+        
     </style>
 </head>
 <body>
@@ -212,8 +260,9 @@ let currentFruitSelection = "";
 
 // --- DATABASE FRUTTI (Incolla qui la tua lista da 700 nomi) ---
 const FRUIT_LIST = [
-  "Abiu", "Açai", "Acerola", "Ackee", "African Breadfruit", "African Mango", "African Star Apple", "Agave", "Akebi", "Albicocca", "Albicocca Reale d’Imola", "Albicocca Vesuviana", "Albicocca Val Venosta", "Albicocca Precoce", "Alchechengi", "Alexandria Strawberry", "Alpine Strawberry", "Amanatsu", "Amara", "Ambarella", "Ambrosia Apple", "Amla", "Ananas", "Ananas Smooth Cayenne", "Ananas Victoria", "Ananas Rosso", "Anacardo", "Anguria", "Anguria Crimson Sweet", "Anguria Sugar Baby", "Anguria Gialla", "Anguria Senza Semi", "Anguria Mini", "Annona Cherimola", "Annurca Apple", "Appleberry", "Aprium", "Araca-Boi", "Arancia", "Arancia Navel", "Arancia Valencia", "Arancia Tarocco", "Arancia Sanguinello", "Arancia Moro", "Arancia Bionda", "Arancia Rossa", "Argan", "Aronia", "Asian Pear", "Atemoya", "Australian Desert Lime", "Autumn Royal Grape", "Avocado", "Avocado Hass", "Avocado Fuerte", "Avocado Pinkerton", "Avocado Reed", "Azzeruolo Bianco", "Azzeruolo Rosso", "Alupag", "Alligator Apple", "Aratiles", "Araza", "Arabica Coffee Cherry", "Arkansas Black Apple", "Amarena", "Alphonso Mango", "Alice Apple", "Ashmead’s Kernel", "Aurora Pear", "Avana Mandarino", "Akebia Quinata", "American Persimmon", "Anjou Pear", "Babaco", "Bacuri", "Bael", "Banana Cavendish", "Banana Blue Java", "Banana Rossa", "Banana Nana", "Bananito", "Barbadine", "Barbados Cherry", "Barberry", "Batuan", "Beach Plum", "Bearberry", "Bergamotto", "Bignay", "Bilberry", "Bilimbi", "Biriba", "Biricoccolo", "Bitter Melon", "Black Apple", "Black Cherry", "Black Currant", "Black Mulberry", "Black Sapote", "Blackberry", "Blood Orange", "Blue Passionfruit", "Blueberry", "Boysenberry", "Bramble", "Brazil Nut", "Breadfruit", "Brush Cherry", "Buddha’s Hand", "Burmese Grape", "Button Mangosteen", "Bing Cherry", "Black Tartarian", "Blenheim Apricot", "Bosc Pear", "Braeburn Apple", "Bramley Apple", "Brogiotto Nero Fig", "Brogiotto Bianco Fig", "Black Amber Plum", "Blackcurrant", "Burlat Cherry", "Blue Honeysuckle", "Baobab Fruit", "Cacao", "Cactus Pear", "Caco", "Caco Mela", "Caco Tipo", "Calamansi", "Calamondin", "Camu Camu", "Canistel", "Cantalupo", "Cape Gooseberry", "Carambola", "Carissa", "Carruba", "Castagna", "Caviar Lime", "Cedro Diamante", "Cedro Voice", "Cempedak", "Ceylon Gooseberry", "Chayote", "Cherimoya", "Cherry", "Chinotto", "Chokeberry", "Ciliegia Ferrovia", "Ciliegia Durone di Vignola", "Ciliegia Marasca", "Ciliegia Visciola", "Ciliegia Giorgia", "Ciliegia Bigarreau", "Ciliegia Moretta", "Ciliegia Lapins", "Citron", "Clementina", "Cloudberry", "Cocco", "Cocona", "Cocomero", "Coffee Berry", "Corniolo", "Crab Apple", "Cranberry", "Cudrania", "Curuba", "Crimson Seedless Grape", "Cortland Apple", "Cosmic Crisp", "Cox’s Orange Pippin", "Cripps Pink", "Cupuaçu", "Custard Apple", "Cydonia", "Casaba Melon", "Charentais Melon", "Crenshaw Melon", "Caci mela", "Carosello", "Corbezzolo", "Damson", "Dattero Medjool", "Dattero Deglet Nour", "Dattero Hayani", "Davidson’s Plum", "Dewberry", "Dragon Fruit Bianco", "Dragon Fruit Rosso", "Dragon Fruit Giallo", "Durian Musang King", "Durian D24", "Eggfruit", "Elderberry", "Elephant Apple", "Emu Apple", "Etrog", "Envy Apple", "Empire Apple", "Eureka Lemon", "Falberry", "Feijoa", "Fico Dottato", "Fico Settembrino", "Fico Panaché", "Fico d’India Bianco", "Fico d’India Rosso", "Fico d’India Giallo", "Finger Lime Pink", "Finger Lime Green", "Finger Lime Yellow", "Fragola", "Fragolina di bosco", "Framboise", "Fuji Apple", "Fuyu Persimmon", "Forelle Pear", "Faustrime", "Feronia", "Flamboyant", "Fairchild Tangerine", "Fortune Mandarin", "Fantasia Nectarine", "Flavortop", "Fairhaven Peach", "Fayette", "Fiesta Apple", "Florina", "Fortune Plum", "Galia Melon", "Gamboge", "Garcinia", "Gelso Nero", "Gelso Bianco", "Gelso Rosso", "Genip", "Giaca", "Giuggiola", "Goji Berry", "Goldenberry", "Gooseberry", "Granadilla", "Grapefruit", "Grapes", "Greengage", "Ground Cherry", "Grumichama", "Guanabana", "Guava", "Guavaberry", "Gala Apple", "Golden Delicious", "Granny Smith", "Giorgia Cherry", "Goccia d’Oro Plum", "Guyot Pear", "Hackberry", "Hala Fruit", "Hardy Kiwi", "Hawthorn", "Heirloom Tomato", "Highbush Blueberry", "Honeydew", "Huckleberry", "Honeyberry", "Honeycrisp Apple", "Hyuganatsu", "Hachiya Persimmon", "Icaque", "Ice Cream Bean", "Illawarra Plum", "Imbe", "Indian Fig", "Indian Gooseberry", "Indian Plum", "Inga Edulis", "Interdonato Lemon", "Italia Grape", "Jabuticaba", "Jackfruit", "Jambul", "Jatobà", "Jelly Plum", "Jicaro", "Jostaberry", "Jujube", "Juniper Berry", "Jazz Apple", "Jonagold", "Jonathan Apple", "Juergen’s Plum", "Kaffir Lime", "Kandis", "Kapok", "Karonda", "Kei Apple", "Kepel", "Keule", "Kiwano", "Kiwi Hayward", "Kiwi Gold", "Kokum", "Korlan", "Kumquat Nagami", "Kumquat Marumi", "Kundong", "Kaiser Pear", "Kanzi Apple", "Keitt Mango", "Kent Mango", "Lampone Rosso", "Lampone Giallo", "Lampone Nero", "Langsat", "Lapsi", "Lemon", "Lemon Aspen", "Lime", "Limetta", "Limonello", "Litchi", "Loganberry", "Longan", "Loquat", "Lulo", "Lychee", "Lady Alice Apple", "Liberty Apple", "Lisbon Lemon", "Lucuma", "Mabolo", "Madrono", "Malay Apple", "Mamey Sapote", "Mammee Apple", "Mamoncillo", "Mandarin", "Mangaba", "Mango Tommy Atkins", "Mango Kent", "Mango Alphonso", "Mangostano", "Mano di Buddha", "Mapo", "Maracuja", "Marang", "Marionberry", "Mayapple", "Mayhaw", "Medlar", "Melograno", "Melone Retato", "Melone Mantovano", "Melone Piel de Sapo", "Mirtillo Nero", "Mirtillo Rosso", "Mirtillo Blu", "Miracle Fruit", "Mock Strawberry", "Monstera Deliciosa", "Mora di rovo", "Mountain Pepper", "Mulberry", "Mundu", "Muscadine", "Muskmelon", "McIntosh Apple", "Mutsu Apple", "Meyer Lemon", "Minneola Tangelo", "Moro Orange", "Musang King", "Nance", "Naranjilla", "Nashi", "Native Currant", "Nectarine", "Neem", "Nespola del Giappone", "Nespola Comune", "Noni", "Nutmeg", "Northern Spy Apple", "Navel Orange", "Ogeechee Lime", "Oil Palm", "Olallieberry", "Olive", "Orange", "Orangelo", "Oregon Grape", "Oroblanco", "Opal Apple", "Palmyra Fruit", "Papaya Formosa", "Papaya Solo", "Passion Fruit", "Pawpaw", "Peach", "Peach Palm", "Pear", "Pecan", "Pepino", "Persimmon", "Piatone", "Pigeon Plum", "Pili Nut", "Pineberry", "Pineapple", "Pitahaya", "Pitomba", "Platano", "Plum", "Pompelmo", "Pomegranate", "Pomelo", "Prugna", "Pulasan", "Pummelo", "Packham’s Triumph", "Passacrassana", "Percoca", "Pesca Saturnia", "Pesca Tabacchiera", "Pesca Gialla", "Pesca Bianca", "Pizzutella Grape", "Pink Lady Apple", "Pinkerton Avocado", "Ponkan Mandarin", "Prugnolo", "Prugna Damaschina", "Prugna della California", "Quandong", "Quince", "Rambai", "Rambutan", "Rangpur", "Raspberry", "Red Currant", "Riberry", "Ribes Rosso", "Ribes Bianco", "Ribes Nero", "Rollinia", "Rose Apple", "Rose Hip", "Rowan", "Royal Gala", "Red Delicious", "Red Bartlett", "Regina Cherry", "Regina Claudia Plum", "Salak", "Salal", "Salmonberry", "Santol", "Sapodilla", "Sapote Nero", "Sapote Bianco", "Sea Buckthorn", "Sea Grape", "Serviceberry", "Sloe", "Soursop", "Star Apple", "Starfruit", "Strawberry", "Sugar Apple", "Surinam Cherry", "Satsuma", "Sanguinello Orange", "Santa Maria Pear", "Sharlyn Melon", "Snow Queen Nectarine", "Stanley Plum", "Sudachi", "Tamarillo", "Tamarindo", "Tangelo", "Tangerine", "Tayberry", "Thimbleberry", "Thompson Seedless", "Ugli Fruit", "Ugni", "Uva Italia", "Uva Sultanina", "Uva Fragola", "Uva Spina Verde", "Uva Spina Rossa", "Valencia Orange", "Velvet Apple", "Vittoria Grape", "Wampee", "Water Apple", "White Sapote", "Wolfberry", "Wood Apple", "Ximenia", "Yangmei", "Youngberry", "Yuzu", "Ziziphus", "Zucchini", "Abiu Oro", "Amanatsu Orange", "Ambrosia Pear", "Amla Berry", "Anjou Red Pear", "Aprium Honey", "Aroniaberry", "Asian Nashi", "Atemoya Geffner", "Avocado Bacon", "Avocado Zutano", "Bananito Sweet", "Barberry Black", "Bignay Berry", "Bilimbi Fruit", "Blackberry Giant", "Blood Lime", "Boysenberry Hybrid", "Breadfruit White", "Buddha Finger", "Calamansi Sour", "Cantalupo di Charentais", "Carambola Star", "Cedro di Calabria", "Cempedak Wild", "Cherry Heart", "Clementina del Golfo", "Cloudberry Gold", "Cocco di mare", "Coffee Berry Red", "Corniolo Rosso", "Cranberry Wild", "Curuba Long", "Damson Blue", "Dattero di Israele", "Dragon Fruit Yellow", "Durian King", "Elderberry Black", "Feijoa Sellowiana", "Fico d'India", "Finger Lime Red", "Fragola Veneta", "Fuji Red", "Galia Sweet", "Gelso Bianco di Sicilia", "Giuggiola di Arquà", "Goji Tibet", "Granadilla Dolce", "Grapefruit Ruby", "Guava Pink", "Honeydew Green", "Jackfruit Honey", "Jujube Chinese", "Kiwano Horned", "Kiwi Soreli", "Kumquat Sweet", "Lampone di bosco", "Litchi China", "Longan Berry", "Loquat Japan", "Lulo Fruit", "Mandarino Tardivo", "Mango Maya", "Mangostano Queen", "Maracuja Viola", "Melograno Dente di Cavallo", "Melone di Paceco", "Mirtillo Gigante", "Mora Selvatica", "Nashi Hosui", "Nectarine Rose", "Nespola di Germania", "Noni Juice Fruit", "Papaya Green", "Passion Yellow", "Peach Red", "Pear Kaiser Alexander", "Pepino Melon", "Persimmon Apple", "Pitahaya Pink", "Platano Verde", "Plum Black", "Pomegranate Red", "Pomelo Pink", "Prugna di Dro", "Rambutan Hairy", "Raspberry Wild", "Ribes Sativum", "Salak Snake", "Sapodilla Brown", "Sapote Chocolate", "Soursop White", "Starfruit Yellow", "Strawberry Garden", "Sugar Apple Green", "Tamarindo Sour", "Tangelo Minneola", "Tangerine Sweet", "Uva Apirena", "Uva Moscato", "Uva Red Globe", "Uva Thompson", "Watermelon Mini", "White Currant", "Wild Berry", "Wolfberry Red", "Yuzu Lemon", "Ziziphus Jujuba", "Zucchini Flower Fruit", "Albicocca Pellechiella", "Arancia Navelina", "Clementina Tardiva", "Mandarino Avana", "Mela Stark Delicious", "Pera Abate Fetel", "Pesca Bianca di Verona", "Susina Goccia d'Oro", "Uva Pizzutella", "Ananas Baby", "Avocado Ettinger", "Banana Baby", "Ciliegia del Monte", "Fico Fiorone", "Melone Galia", "Mirtillo Nero Foresta", "Pompelmo Jaffa", "Ribes Nero di Borgogna", "Uva Italia di Canicattì", "Amarena di Cantiano", "Ciliegia di Marostica", "Fico di Cosenza", "Limone di Siracusa", "Mela della Val di Non", "Nocciola Giffoni", "Pera dell'Emilia", "Pesca di Leonforte", "Uva di Puglia", "Zafferano Frutto", "Anona del Portogallo", "Bacca di Ginepro", "Crespino", "Fico di Smirne", "Mela Cotogna di Bivona", "Nespola Gigante", "Pera Coscia di Ribera", "Susina Coscia di Donna", "Uva di Pantelleria", "Albicocca Vesuviana", "Arancia di Ribera", "Ciliegia dell'Etna", "Fico d'India dell'Etna", "Limone di Rocca Imperiale", "Mela Alto Adige", "Nocciola del Piemonte", "Pera Mantovana", "Pesca di Volpedo", "Uva di Mazzarrone", "Clementina di Calabria", "Limone Costa d'Amalfi", "Melone Mantovano IGP", "Pera dell'Emilia Romagna", "Pesca Nettarina di Romagna", "Uva di Canicattì", "Castagna di Cuneo", "Marrone del Mugello", "Nocciola Romana", "Pistacchio di Bronte"
+  "Albicocca", "Alchechengi", "Amarena", "Ananas", "Anacardo", "Anguria", "Annona", "Arancia", "Arancia Amara", "Arancia Bionda", "Arancia Rossa", "Arancio Trifogliato", "Aronia", "Avocado", "Azzeruolo", "Babaco", "Bananito", "Banana", "Bergamotto", "Biricoccolo", "Caco", "Calamandino", "Carruba", "Carambola", "Castagna", "Cedro", "Ciliegia", "Chinotto", "Clementina", "Cocco", "Cocomero", "Cocomero Asinino", "Corbezzolo", "Corniolo", "Cotogna", "Crespino", "Curuba", "Dattero", "Dattero Cinese", "Durian", "Fagiolo Cornetto", "Feijoa", "Fico", "Fico d'India", "Fico degli Ottentotti", "Fragola", "Fragolina di bosco", "Frutto della Passione", "Frutto del Drago", "Frutto Stella", "Gelso Bianco", "Gelso Nero", "Gelso Rosso", "Giaca", "Giuggiola", "Granadilla", "Guava", "Jostaberry", "Kiwi", "Kiwano", "Kumquat", "Lampone", "Lampone Giallo", "Lampone Nero", "Litchi", "Limetta", "Limone", "Limone di Sorrento", "Limone di Amalfi", "Limone Cedrato", "Lulo", "Mandarino", "Mandarancio", "Mandorla", "Mango", "Mangostano", "Mano di Buddha", "Mapo", "Maracuja", "Mela", "Mela Cotogna", "Mela Campana", "Mela Rosa", "Melograno", "Melone", "Melone Cantalupo", "Melone Retato", "Melone d'Inverno", "Mirtillo Nero", "Mirtillo Rosso", "Mirtillo Blu", "Mirtillo Siberiano", "Mora", "Mora di Rovo", "Mora di Gelso", "Nashi", "Nashi (Pera-Mela)", "Nectarina", "Nespola", "Nespola Comune", "Nespola del Giappone", "Nocciola", "Noce", "Noce di Cocco", "Noce di Pecan", "Noce di Macadamia", "Noce del Brasile", "Olive", "Olivello Spinoso", "Papaya", "Passiflora", "Pera", "Pera Coscia", "Pera Mastantuono", "Pera Volpina", "Pesca", "Pesca Noce", "Pesca Tabacchiera", "Pesca Percoca", "Pinolo", "Pistacchio", "Pitaya", "Platano", "Pompelmo", "Pompelmo Rosa", "Pomelo", "Prugna", "Prugnolo", "Rambutan", "Ribes Nero", "Ribes Rosso", "Ribes Bianco", "Rosa Canina", "Rovo", "Sambuco", "Sapodilla", "Sorba", "Susina", "Susina Regina Claudia", "Tamarindo", "Tamarillo", "Tangelo", "Ugli", "Uva", "Uva Spina", "Uva Fragola", "Uva di Corinto", "Uva Passa", "Uva Sultanina", "Visciola", "Zenzero (Frutto)", "Zizifo"
 ]
+
 
 
 const DESCRIZIONI = {
@@ -464,29 +513,158 @@ function updateRadar() {
 }
     
 function cloudSave() {
-    if (!currentFruitSelection) return alert("Seleziona un frutto!");
-    const score = parseInt(document.getElementById('live-score').innerText);
-    const analysisData = { user: currentUser, fruit: currentFruitSelection, score: score, timestamp: Date.now() };
-    db.ref('analyses/' + currentUser + '/' + currentFruitSelection).set(analysisData);
-    db.ref('global_rankings/' + currentFruitSelection + '_' + currentUser).set(analysisData)
-    .then(() => { alert("Salvato!"); updateRankings(); });
+    if (!currentFruitSelection) return alert("Seleziona un frutto dalla lista!");
+    
+    // Raccogliamo i dati attuali dei 35 parametri
+    let analisiAttuale = {
+        score: parseInt(document.getElementById('live-score').innerText),
+        timestamp: Date.now(),
+        parametri: {}
+    };
+
+    for(let i=0; i<35; i++) {
+        analisiAttuale.parametri[i] = {
+            v: parseInt(document.getElementById(`v-sli-${i}`).value),
+            w: parseInt(document.getElementById(`w-sli-${i}`).value),
+            n: negativeState[i] ? -1 : 1
+        };
+    }
+
+    // 1. Salva nel Personale
+    db.ref(`users/${currentUser}/analisi/${currentFruitSelection}`).set(analisiAttuale);
+
+    // 2. Aggiorna il Globale con transazione (Media Parametrica)
+    const globalRef = db.ref(`global_stats/${currentFruitSelection}`);
+    globalRef.transaction((currentData) => {
+        if (currentData === null) {
+            let data = { count: 1, somme: {}, utenti: {} };
+            for(let i=0; i<35; i++) {
+                data.somme[i] = { v: analisiAttuale.parametri[i].v, w: analisiAttuale.parametri[i].w };
+            }
+            data.utenti[currentUser] = analisiAttuale.score;
+            return data;
+        } else {
+            currentData.count++;
+            for(let i=0; i<35; i++) {
+                currentData.somme[i].v += analisiAttuale.parametri[i].v;
+                currentData.somme[i].w += analisiAttuale.parametri[i].w;
+            }
+            currentData.utenti[currentUser] = analisiAttuale.score;
+            return currentData;
+        }
+    }, () => {
+        alert("Analisi salvata! La media globale è stata aggiornata.");
+        updateRankings();
+    });
+}
+
+function deleteAnalysis(fruitName) {
+    if(!confirm(`Vuoi eliminare "${fruitName}"? Il tuo contributo verrà rimosso anche dalla media globale.`)) return;
+
+    db.ref(`users/${currentUser}/analisi/${fruitName}`).once('value', snap => {
+        const dataUser = snap.val();
+        if(!dataUser) return;
+
+        // Rimuovi dal Globale e ricalcola
+        const globalRef = db.ref(`global_stats/${fruitName}`);
+        globalRef.transaction((currentData) => {
+            if (currentData) {
+                currentData.count--;
+                if (currentData.count <= 0) return null; 
+                for(let i=0; i<35; i++) {
+                    currentData.somme[i].v -= dataUser.parametri[i].v;
+                    currentData.somme[i].w -= dataUser.parametri[i].w;
+                }
+                delete currentData.utenti[currentUser];
+            }
+            return currentData;
+        });
+
+        // Rimuovi dal Personale
+        db.ref(`users/${currentUser}/analisi/${fruitName}`).remove();
+    });
 }
 
 function updateRankings() {
-    db.ref('analyses/' + currentUser).orderByChild('score').limitToLast(10).on('value', snap => {
-        const list = document.getElementById('list-pers');
-        list.innerHTML = "";
-        let items = []; snap.forEach(c => { items.push(c.val()); });
-        items.reverse().forEach(item => { list.innerHTML += `<div class="rank-item"><span>${item.fruit}</span><span style="color:var(--accent)">${item.score}</span></div>`; });
+    // Lista Personale con Cestino
+    db.ref(`users/${currentUser}/analisi`).on('value', snap => {
+        const div = document.getElementById('list-pers');
+        div.innerHTML = "";
+        snap.forEach(child => {
+            const name = child.key;
+            const val = child.val();
+            div.innerHTML += `
+                <div class="rank-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; background:white; padding:15px; border-radius:20px;">
+                    <div onclick="loadToGraph('${name}', 'pers')" style="cursor:pointer; flex-grow:1;">
+                        <b>${name}</b> <span style="color:var(--accent); margin-left:10px;">${val.score}</span>
+                    </div>
+                    <div onclick="deleteAnalysis('${name}')" style="cursor:pointer; font-size:1.2rem;">🗑️</div>
+                </div>`;
+        });
     });
-    db.ref('global_rankings').orderByChild('score').limitToLast(10).on('value', snap => {
-        const list = document.getElementById('list-glob');
-        list.innerHTML = "";
-        let items = []; snap.forEach(c => { items.push(c.val()); });
-        items.reverse().forEach(item => { list.innerHTML += `<div class="rank-item"><span>${item.fruit} <small>(${item.user})</small></span><span style="color:var(--accent)">${item.score}</span></div>`; });
+
+    // Lista Globale con Media e tasto Partecipanti
+    db.ref('global_stats').on('value', snap => {
+        const div = document.getElementById('list-glob');
+        div.innerHTML = "";
+        snap.forEach(child => {
+            const name = child.key;
+            const data = child.val();
+            let totalScore = 0;
+            Object.values(data.utenti).forEach(s => totalScore += s);
+            let avgScore = Math.round(totalScore / data.count);
+
+            div.innerHTML += `
+                <div class="rank-box" style="margin-bottom:10px; background:white; padding:15px; border-radius:20px;">
+                    <div onclick="loadToGraph('${name}', 'glob')" style="cursor:pointer; display:flex; justify-content:space-between;">
+                        <b>${name}</b> <span style="color:var(--accent);">${avgScore}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.7rem; color:#888;">
+                        <span>Basato su ${data.count} utenti</span>
+                        <span onclick="showUsers('${name}')" style="text-decoration:underline; cursor:pointer; font-weight:bold;">PARTECIPANTI</span>
+                    </div>
+                </div>`;
+        });
     });
 }
 
+function showUsers(fruitName) {
+    db.ref(`global_stats/${fruitName}/utenti`).once('value', snap => {
+        let txt = `Partecipanti per ${fruitName}:\n\n`;
+        snap.forEach(u => { txt += `- ${u.key}: Rating ${u.val()}\n`; });
+        alert(txt);
+    });
+}
+
+function loadToGraph(fruitName, type) {
+    if(type === 'pers') {
+        db.ref(`users/${currentUser}/analisi/${fruitName}/parametri`).once('value', snap => {
+            applyToSliders(snap.val());
+            nav('grafico', document.querySelectorAll('.nav-item')[1]);
+        });
+    } else {
+        db.ref(`global_stats/${fruitName}`).once('value', snap => {
+            const data = snap.val();
+            let mediaParams = {};
+            for(let i=0; i<35; i++) {
+                mediaParams[i] = { 
+                    v: Math.round(data.somme[i].v / data.count), 
+                    w: Math.round(data.somme[i].w / data.count) 
+                };
+            }
+            applyToSliders(mediaParams);
+            nav('grafico', document.querySelectorAll('.nav-item')[1]);
+        });
+    }
+}
+
+function applyToSliders(params) {
+    for(let i in params) {
+        document.getElementById(`v-sli-${i}`).value = params[i].v;
+        document.getElementById(`w-sli-${i}`).value = params[i].w;
+    }
+    calc(); 
+}
 </script>
 </body>
 </html>

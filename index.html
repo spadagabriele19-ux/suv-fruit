@@ -646,7 +646,7 @@ function deleteAnalysis(fruitName) {
 }
 
 function updateRankings() {
-    // Lista Personale con Cestino
+    // Lista Personale - Cliccando si apre il Pop-up con tasti MODIFICA ed ELIMINA
     db.ref(`users/${currentUser}/analisi`).on('value', snap => {
         const div = document.getElementById('list-pers');
         div.innerHTML = "";
@@ -654,16 +654,16 @@ function updateRankings() {
             const name = child.key;
             const val = child.val();
             div.innerHTML += `
-                <div class="rank-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; background:white; padding:15px; border-radius:20px;">
-                    <div onclick="loadToGraph('${name}', 'pers')" style="cursor:pointer; flex-grow:1;">
-                        <b>${name}</b> <span style="color:var(--accent); margin-left:10px;">${val.score}</span>
+                <div class="rank-box" onclick="openFruitModal('${name}', 'pers')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; background:white; padding:15px; border-radius:20px;">
+                    <div>
+                        <b>${name}</b> 
                     </div>
-                    <div onclick="deleteAnalysis('${name}')" style="cursor:pointer; font-size:1.2rem;">🗑️</div>
+                    <span style="color:var(--accent); font-weight:900;">${val.score}</span>
                 </div>`;
         });
     });
 
-    // Lista Globale con Media e tasto Partecipanti
+    // Lista Globale - Cliccando si apre il Pop-up con tasto PARTECIPANTI
     db.ref('global_stats').on('value', snap => {
         const div = document.getElementById('list-glob');
         div.innerHTML = "";
@@ -671,23 +671,23 @@ function updateRankings() {
             const name = child.key;
             const data = child.val();
             let totalScore = 0;
+            // Calcoliamo la media dei rating per la visualizzazione rapida
             Object.values(data.utenti).forEach(s => totalScore += s);
             let avgScore = Math.round(totalScore / data.count);
 
             div.innerHTML += `
-                <div class="rank-box" style="margin-bottom:10px; background:white; padding:15px; border-radius:20px;">
-                    <div onclick="loadToGraph('${name}', 'glob')" style="cursor:pointer; display:flex; justify-content:space-between;">
-                        <b>${name}</b> <span style="color:var(--accent);">${avgScore}</span>
+                <div class="rank-box" onclick="openFruitModal('${name}', 'glob')" style="cursor:pointer; margin-bottom:10px; background:white; padding:15px; border-radius:20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <b>${name}</b> 
+                        <span style="color:var(--accent); font-weight:900;">${avgScore}</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.7rem; color:#888;">
-                        <span>Basato su ${data.count} utenti</span>
-                        <span onclick="showUsers('${name}')" style="text-decoration:underline; cursor:pointer; font-weight:bold;">PARTECIPANTI</span>
+                    <div style="margin-top:8px; font-size:0.7rem; color:#888; font-weight:500;">
+                        Media basata su ${data.count} analisi
                     </div>
                 </div>`;
         });
     });
 }
-
 function showUsers(fruitName) {
     db.ref(`global_stats/${fruitName}/utenti`).once('value', snap => {
         let txt = `Partecipanti per ${fruitName}:\n\n`;

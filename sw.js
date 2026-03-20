@@ -1,3 +1,5 @@
+let chartInstance = null;
+let currentFruitSelection = "";
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open('suv-f-v1').then((cache) => cache.addAll(['index.html', 'manifest.json'])));
 });
